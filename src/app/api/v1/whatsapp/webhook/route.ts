@@ -9,19 +9,11 @@ export const dynamic = 'force-dynamic';
 const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
 
 export async function GET(req: NextRequest) {
-    const { searchParams } = new URL(req.url);
     const mode = searchParams.get('hub.mode');
     const token = searchParams.get('hub.verify_token');
     const challenge = searchParams.get('hub.challenge');
 
-    console.log('[Webhook GET] Received Token:', `"${token}"`);
-    console.log('[Webhook GET] Expected Token:', `"${VERIFY_TOKEN}"`);
-
     const isMatch = (mode === 'subscribe' && token?.trim() === VERIFY_TOKEN?.trim());
-    
-    // TEMPORARY BYPASS: If you are 100% sure the URL is correct but Meta still fails,
-    // you can uncomment the next line to bypass verification temporarily.
-    if (mode === 'subscribe') return new NextResponse(challenge, { status: 200 });
 
     if (isMatch) {
         return new NextResponse(challenge, { status: 200 });
