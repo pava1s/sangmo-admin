@@ -1,44 +1,57 @@
+import { fetchAuthSession, getCurrentUser, fetchUserAttributes, signOut as amplifySignOut } from 'aws-amplify/auth';
+import { configureAmplify } from './amplify-config';
+
+// Initialize Amplify on first import
+configureAmplify();
 
 export type UserRole = 'super_admin' | 'organizer';
 
 export interface UserSession {
-    email: string;
-    role: UserRole;
-    orgId?: string;
+  email: string;
+  role: UserRole;
+  organizations?: string[];
 }
 
-// Current Mock Auth using the Super Admin email provided by the user
-const SUPER_ADMIN_EMAIL = 'pavansrinivas64@gmail.com';
+export async function getAuthSession(): Promise<UserSession | null> {
+  try {
+    const user = await getCurrentUser();
+    const attributes = await fetchUserAttributes();
+    const session = await fetchAuthSession();
+    
+    // Groups are stored in the ID Token
+    const tokens = session.tokens;
+    const groups = (tokens?.idToken?.payload?.['cognito:groups'] as string[]) || [];
+    
+    let role: UserRole = 'organizer';
+    if (groups.includes('Admins') || attributes.email === 'pavansrinivas64@gmail.com') {
+      role = 'super_admin';
+    }
 
-export function getSession(): UserSession {
-    // In a real app, this would come from a cookie or Auth header
-    // For this migration, we mock it based on the user's instructions
     return {
-        email: SUPER_ADMIN_EMAIL,
-        role: 'super_admin'
+      email: attributes.email || '',
+      role,
+      organizations: groups.filter(g => g !== 'Admins' && g !== 'Organizers')
     };
+  } catch (error) {
+    console.debug('No active session found');
+    return null;
+  }
 }
 
-export function isSuperAdmin(session: UserSession): boolean {
-    return session.role === 'super_admin' && session.email === SUPER_ADMIN_EMAIL;
+// Temporary backward compatibility for components not yet converted to async
+export function getSession(): UserSession {
+  // We keep a mock fallback for the layout but prefer getAuthSession everywhere
+  // In a real app, you'd use a React Context to provide this.
+  return {
+    email: 'pavansrinivas64@gmail.com',
+    role: 'super_admin'
+  };
 }
 
-export function isOrganizer(session: UserSession): boolean {
-    return session.role === 'organizer';
+export function isSuperAdmin(session: UserSession | null): boolean {
+  return session?.role === 'super_admin';
 }
 
-export const ROLE_PERMISSIONS = {
-    super_admin: [
-        'whatsapp',
-        'email',
-        'bookings',
-        'partners',
-        'analytics',
-        'developers',
-        'settings'
-    ],
-    organizer: [
-        'bookings',
-        'setup'
-    ]
-};
+export async function logout() {
+  await amplifySignOut();
+}
