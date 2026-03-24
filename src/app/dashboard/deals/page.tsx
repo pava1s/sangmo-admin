@@ -1,13 +1,12 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
 import { Plus, GripVertical, MessageSquare, DollarSign, Calendar, MoreHorizontal } from 'lucide-react';
-import { Deal, DealStage } from '@/lib/types'; // We need to define this
-import { formatCurrency } from '@/lib/utils'; // Make sure this exists
+import { Deal, DealStage } from '@/lib/types';
+import { formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
+import { apiClient as api } from '@/lib/api-client';
 
-// Stages Configuration
 const STAGES: { id: DealStage; label: string; color: string }[] = [
     { id: 'lead', label: 'Lead', color: 'bg-slate-500' },
     { id: 'qualified', label: 'Qualified', color: 'bg-blue-500' },
@@ -20,7 +19,6 @@ const STAGES: { id: DealStage; label: string; color: string }[] = [
 export default function DealsPage() {
     const [deals, setDeals] = useState<Deal[]>([]);
     const [loading, setLoading] = useState(true);
-    const supabase = createClient();
 
     useEffect(() => {
         fetchDeals();
@@ -28,8 +26,12 @@ export default function DealsPage() {
 
     async function fetchDeals() {
         setLoading(true);
-        const { data, error } = await fetch('/api/deals').then(res => res.json());
-        if (data) setDeals(data);
+        try {
+            const data = await api.getDeals();
+            if (data) setDeals(data);
+        } catch (error) {
+            console.error("Failed to fetch deals", error);
+        }
         setLoading(false);
     }
 
@@ -37,11 +39,13 @@ export default function DealsPage() {
         // Optimistic Update
         setDeals(prev => prev.map(d => d.id === dealId ? { ...d, stage: newStage } : d));
 
-        // API Call
-        await fetch(`/api/deals/${dealId}`, {
-            method: 'PATCH',
-            body: JSON.stringify({ stage: newStage })
-        });
+        // API Call via AWS client
+        try {
+            await api.updateDeal(dealId, { stage: newStage });
+        } catch (error) {
+            console.error("Failed to update deal stage", error);
+            fetchDeals(); // Revert on error
+        }
     };
 
     return (

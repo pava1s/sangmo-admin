@@ -32,10 +32,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import type { Campaign, CampaignMessage } from '@/lib/data';
+import { Campaign } from '@/lib/aws/types';
 import { format } from 'date-fns';
 // STEP 1: Import your custom auth fetcher
-import { authFetch } from '@/utils/api-client';
+import { apiClient as api } from '@/lib/api-client';
 
 const statusConfig = {
   Sending: { variant: 'secondary' as const, icon: Loader, className: 'animate-spin' },
@@ -55,12 +55,7 @@ export default function CampaignDetailPage() {
   const fetchCampaign = React.useCallback(async () => {
     try {
       // STEP 2: Use authFetch instead of fetch to bypass the 401 error
-      const response = await authFetch(`/api/campaigns/${id}`);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch campaign details');
-      }
-      const data = await response.json();
+      const data = await api.getCampaignById(id);
       setCampaign(data);
     } catch (error: any) {
       toast({

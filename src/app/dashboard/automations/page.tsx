@@ -1,7 +1,6 @@
-"use client";
+'use client';
 
 import React, { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
 import { Bot, Plus, Trash2, Zap, Headphones, DollarSign, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,13 +22,12 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-
+import { apiClient as api } from '@/lib/api-client';
 
 export default function AutomationsPage() {
     const [rules, setRules] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const supabase = createClient();
 
     // Form State
     const [newName, setNewName] = useState('');
@@ -58,38 +56,37 @@ export default function AutomationsPage() {
 
     async function fetchRules() {
         setIsLoading(true);
-        const { data, error } = await supabase
-            .from('automation_rules')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (error) console.error('Error fetching rules:', error);
-        setRules(data || []);
-        setIsLoading(false);
+        try {
+            const data = await api.getAutomations();
+            setRules(data || []);
+        } catch (error) {
+            console.error('Error fetching rules:', error);
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     async function toggleRule(id: string, currentStatus: boolean) {
         // Optimistic update
         setRules(rules.map(r => r.id === id ? { ...r, is_active: !currentStatus } : r));
-
-        const { error } = await supabase
-            .from('automation_rules')
-            .update({ is_active: !currentStatus })
-            .eq('id', id);
-
-        if (error) {
-            // Revert on error
+        // Placeholder for AWS update
+        try {
+            await api.updateAutomation(id, { is_active: !currentStatus });
+        } catch (error) {
             console.error("Failed to toggle", error);
-            fetchRules();
+            fetchRules(); // Revert on error
         }
     }
 
     async function deleteRule(id: string) {
         if (!confirm("Are you sure you want to delete this rule?")) return;
-
-        const { error } = await supabase.from('automation_rules').delete().eq('id', id);
-        if (!error) {
-            setRules(rules.filter(r => r.id !== id));
+        setRules(rules.filter(r => r.id !== id));
+        // Placeholder for AWS delete
+        try {
+            await api.deleteAutomation(id);
+        } catch (error) {
+            console.error("Failed to delete", error);
+            fetchRules(); // Revert on error
         }
     }
 
@@ -99,21 +96,31 @@ export default function AutomationsPage() {
         // Determine value based on action type
         const actionValue = newAction === 'assign_team' ? newTeam : newReply;
 
-        const { data, error } = await supabase.from('automation_rules').insert({
+        const newRule = {
+            id: Math.random().toString(36).substr(2, 9), // Temporary ID for optimistic update
             name: newName,
             keywords: keywordsArray,
             action_type: newAction,
             action_value: actionValue,
             match_type: 'contains',
             is_active: true
-        }).select().single();
+        };
 
-        if (!error && data) {
-            setRules([data, ...rules]);
-            setIsCreateOpen(false);
-            // Reset form
-            setNewName('');
-            setNewKeywords('');
+        setRules([newRule, ...rules]);
+        setIsCreateOpen(false);
+        // Reset form
+        setNewName('');
+        setNewKeywords('');
+        setNewReply(''); // Reset reply as well
+
+        // Placeholder for AWS insert
+        try {
+            // @ts-ignore
+            await api.createAutomation(newRule);
+            fetchRules(); // Re-fetch to get actual ID and ensure consistency
+        } catch (error) {
+            console.error("Failed to create rule", error);
+            fetchRules(); // Revert on error
         }
     }
 
@@ -261,11 +268,11 @@ export default function AutomationsPage() {
                             <Button onClick={async () => {
                                 setIsLoading(true);
                                 const defaultRules = [
-                                    { name: 'Sales Handler', keywords: ['price', 'cost', 'quote'], action_type: 'assign_team', action_value: 'Sales', match_type: 'contains', is_active: true },
-                                    { name: 'Support Bot', keywords: ['help', 'issue', 'otp'], action_type: 'assign_team', action_value: 'Support', match_type: 'contains', is_active: true }
+                                    { id: 'd1', name: 'Sales Handler', keywords: ['price', 'cost', 'quote'], action_type: 'assign_team', action_value: 'Sales', match_type: 'contains', is_active: true },
+                                    { id: 'd2', name: 'Support Bot', keywords: ['help', 'issue', 'otp'], action_type: 'assign_team', action_value: 'Support', match_type: 'contains', is_active: true }
                                 ];
-                                await supabase.from('automation_rules').insert(defaultRules);
-                                fetchRules();
+                                setRules(defaultRules);
+                                setIsLoading(false);
                             }}>
                                 <Zap className="w-4 h-4 mr-2" />
                                 Generate Defaults

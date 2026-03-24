@@ -1,0 +1,32 @@
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, GetCommand, QueryCommand, UpdateCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
+
+const client = new DynamoDBClient({
+  region: process.env.AWS_REGION || "ap-south-2",
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
+  },
+});
+
+export const docClient = DynamoDBDocumentClient.from(client);
+
+export const TABLE_NAME = process.env.DYNAMO_TABLE || "WanderlynxTable";
+
+export const putItem = (item: any) => docClient.send(new PutCommand({ TableName: TABLE_NAME, Item: item }));
+export const getItem = (pk: string, sk: string) => docClient.send(new GetCommand({ TableName: TABLE_NAME, Key: { pk, sk } }));
+
+export const queryByPk = (pk: string) => docClient.send(new QueryCommand({
+    TableName: TABLE_NAME,
+    KeyConditionExpression: "pk = :pk",
+    ExpressionAttributeValues: { ":pk": pk }
+}));
+
+export const queryGSI1 = (gsi1pk: string) => docClient.send(new QueryCommand({
+    TableName: TABLE_NAME,
+    IndexName: "GSI1",
+    KeyConditionExpression: "gsi1pk = :gsi1pk",
+    ExpressionAttributeValues: { ":gsi1pk": gsi1pk }
+}));
+
+export const deleteItem = (pk: string, sk: string) => docClient.send(new DeleteCommand({ TableName: TABLE_NAME, Key: { pk, sk } }));

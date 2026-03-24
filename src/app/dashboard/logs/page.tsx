@@ -18,7 +18,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import type { LogEntry } from '@/lib/logger';
+// import type { LogEntry } from '@/lib/logger';
+type LogEntry = any;
 import {
   CheckCircle,
   XCircle,
@@ -41,7 +42,7 @@ import {
 import { getCurrentUser, User } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { authFetch } from '@/utils/api-client';
+import { apiClient as api } from '@/lib/api-client';
 import {
   Dialog,
   DialogContent,
@@ -138,17 +139,15 @@ export default function LogsPage() {
       setCurrentUser(user);
 
       if (['Super Admin', 'Admin', 'Administrator', 'Internal Staff', 'Tech'].includes(user?.role || '')) {
-        const response = await authFetch('/api/logs');
-        if (!response.ok) throw new Error('Failed to fetch logs');
-        const data = await response.json();
+        const data = await api.getLogs();
         setLogs(Array.isArray(data) ? data : []);
 
         // Fetch Stats
-        const statsRes = await authFetch('/api/stats/usage');
-        if (statsRes.ok) {
-          const stats = await statsRes.json();
-          setApiStats(stats);
-        }
+        // const statsRes = await authFetch('/api/stats/usage');
+        // if (statsRes.ok) {
+        //   const stats = await statsRes.json();
+        //   setApiStats(stats);
+        // }
       }
     } catch (err: any) {
       setError(err.message);

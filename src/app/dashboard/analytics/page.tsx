@@ -16,20 +16,17 @@ import {
     Legend
 } from 'recharts';
 
-import { createClient } from '@/utils/supabase/client';
+import { apiClient as api } from '@/lib/api-client';
 
 export default function AnalyticsPage() {
     const [data, setData] = React.useState<any>(null);
     const [loading, setLoading] = React.useState(true);
 
-    const supabase = createClient();
-
     React.useEffect(() => {
         async function loadData() {
             try {
-                const res = await fetch('/api/analytics');
-                if (res.ok) {
-                    const json = await res.json();
+                const json = await api.getAnalytics();
+                if (json) {
                     setData(json);
                 }
             } catch (e) {
@@ -40,21 +37,9 @@ export default function AnalyticsPage() {
         }
 
         loadData();
-
-        // Realtime Subscription
-        const channel = supabase
-            .channel('analytics-realtime')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
-                loadData(); // Reload on new message
-            })
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, () => {
-                loadData(); // Reload on status change
-            })
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
+        // Placeholder for AWS Realtime or periodic refresh
+        const interval = setInterval(loadData, 30000); // 30s refresh
+        return () => clearInterval(interval);
     }, []);
 
     if (loading) {

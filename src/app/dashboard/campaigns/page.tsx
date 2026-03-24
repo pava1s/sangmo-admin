@@ -67,7 +67,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Campaign, Template } from '@/lib/data';
+import { Campaign, Template } from '@/lib/aws/types';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { Progress } from '@/components/ui/progress';
@@ -79,7 +79,7 @@ import {
 } from '@/components/ui/tooltip';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { getCurrentUser, User } from '@/lib/auth';
-import { authFetch } from '@/utils/api-client';
+import { apiClient as api } from '@/lib/api-client';
 
 // FIX: Added 'as const' to all variants to solve Badge TypeScript errors
 const statusConfig = {
@@ -133,19 +133,16 @@ function CreateCampaignDialog({
     async function initData() {
       if (open) {
         // Fetch Templates
-        const resT = await authFetch('/api/templates');
-        if (resT.ok) setTemplates(await resT.json());
+        const templates = await api.getTemplates();
+        setTemplates(templates);
 
         // Fetch Contacts to extract Tags
-        const resC = await authFetch('/api/customers');
-        if (resC.ok) {
-          const contacts = await resC.json();
-          const tags = new Set<string>();
-          contacts.forEach((c: any) => {
-            if (Array.isArray(c.tags)) c.tags.forEach((t: string) => tags.add(t));
-          });
-          setAvailableTags(Array.from(tags));
-        }
+        const contacts = await api.getCustomers();
+        const tags = new Set<string>();
+        contacts.forEach((c: any) => {
+          if (Array.isArray(c.tags)) c.tags.forEach((t: string) => tags.add(t));
+        });
+        setAvailableTags(Array.from(tags));
       }
     }
     initData();
@@ -156,7 +153,7 @@ function CreateCampaignDialog({
     if (selectedTemplate) {
       // Regex to find {{1}}, {{2}}, etc.
       const regex = /{{(\d+)}}/g;
-      const matches = Array.from(selectedTemplate.content.matchAll(regex), m => m[1]);
+      const matches = Array.from(selectedTemplate.content.matchAll(regex), (m: any) => m[1]);
       const uniqueVars = Array.from(new Set(matches)).sort((a, b) => parseInt(a) - parseInt(b));
 
       setDetectedVariables(uniqueVars);
@@ -185,21 +182,13 @@ function CreateCampaignDialog({
 
     setIsLoading(true);
     try {
-      const response = await authFetch('/api/campaigns', {
-        method: 'POST',
-        body: JSON.stringify({
-          name,
-          templateName: selectedTemplate.name,
-          templateContent: selectedTemplate.content,
-          variables: variableMapping, // Send the mapping
-          targetTags: selectedTags
-        }),
+      await api.createCampaign({
+        name,
+        templateName: selectedTemplate.name,
+        templateContent: selectedTemplate.content,
+        variables: variableMapping, // Send the mapping
+        targetTags: selectedTags
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create campaign');
-      }
 
       onCampaignCreated();
       toast({
@@ -453,9 +442,7 @@ export default function CampaignsPage() {
 
   const fetchCampaigns = React.useCallback(async () => {
     try {
-      const response = await authFetch('/api/campaigns');
-      if (!response.ok) throw new Error('Failed to fetch');
-      const data = await response.json();
+      const data = await api.getCampaigns();
       setCampaigns(data);
     } catch (error: any) {
       console.error("Fetch Error:", error.message);
@@ -493,15 +480,7 @@ export default function CampaignsPage() {
     // For now, we rely on the toast and auto-refresh
 
     try {
-      const response = await authFetch(`/api/campaigns/${campaign.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ action: action.toLowerCase() }) // 'send', 'pause', 'resume', 'archive'
-      });
-
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.message || 'Action failed');
-      }
+      await api.updateCampaign(campaign.id, { action: action.toLowerCase() });
 
       toast({ title: 'Success', description: `Campaign ${action} action processed.` });
       fetchCampaigns(); // Refresh list immediately
