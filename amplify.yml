@@ -1,0 +1,22 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - echo "Checking Environment Variables..."
+        - env | grep MY_AWS || echo "MY_AWS variables not found"
+        - npm ci --cache .npm --prefer-offline
+        # Run the 302 Patch migration before build to ensure data is ready
+        - npx ts-node --compiler-options '{"module":"commonjs"}' scripts/patch-tenant-id.ts || echo "Migration skipped or failed"
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - .next/cache/**/*
+      - .npm/**/*
+      - node_modules/**/*

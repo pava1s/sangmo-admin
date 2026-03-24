@@ -53,7 +53,8 @@ export async function POST(req: NextRequest) {
         timestamp: timestamp,
         status: 'received',
         platform: 'Whatsapp',
-        message_id: message.id
+        message_id: message.id,
+        tenant_id: 'pavansrinivas64@gmail.com'
       };
 
       await docClient.send(new PutCommand({
@@ -72,7 +73,8 @@ export async function POST(req: NextRequest) {
         last_timestamp: timestamp,
         unread_count: 1,
         status: 'active',
-        platform: 'Whatsapp'
+        platform: 'Whatsapp',
+        tenant_id: 'pavansrinivas64@gmail.com'
       };
 
       await docClient.send(new PutCommand({
