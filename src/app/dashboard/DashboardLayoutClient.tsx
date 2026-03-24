@@ -21,7 +21,9 @@ import {
   Mail,
   Calendar,
   Briefcase,
-  UserPlus
+  UserPlus,
+  ChevronDown,
+  LayoutGrid
 } from 'lucide-react';
 import { getSession, isSuperAdmin } from '@/lib/auth';
 
@@ -72,16 +74,23 @@ type MenuItem = {
 
 const menuItems: MenuItem[] = [
   { href: '/dashboard', label: 'Service Hub', icon: LayoutDashboard, roles: ['super_admin', 'organizer'] },
-  { href: '/dashboard/whatsapp/inbox', label: 'WhatsApp CRM', icon: MessageSquare, roles: ['super_admin'] },
-  { href: '/dashboard/bookings', label: 'Booking Manager', icon: Calendar, roles: ['super_admin', 'organizer'] },
-  { href: '/dashboard/email', label: 'Email Center', icon: Mail, roles: ['super_admin'] },
-  { href: '/dashboard/partners', label: 'Partner Portal', icon: Briefcase, roles: ['super_admin'] },
+  { href: '/dashboard/bookings', label: 'Bookings', icon: Calendar, roles: ['super_admin', 'organizer'] },
+  { href: '/dashboard/whatsapp/inbox', label: 'Inbox', icon: MessageSquare, roles: ['super_admin'] },
+  { href: '/dashboard/whatsapp/campaigns', label: 'Campaigns', icon: Send, roles: ['super_admin'] },
+  { href: '/dashboard/whatsapp/automations', label: 'Automations', icon: Bot, roles: ['super_admin'] },
+  { href: '/dashboard/whatsapp/templates', label: 'Templates', icon: ScrollText, roles: ['super_admin'] },
+  { href: '/dashboard/whatsapp/contacts', label: 'Contacts', icon: Users, roles: ['super_admin'] },
+  { href: '/dashboard/whatsapp/analytics', label: 'Analytics', icon: BarChart, roles: ['super_admin'] },
+  { href: '/dashboard/whatsapp/deals', label: 'Deals', icon: DollarSign, roles: ['super_admin'] },
 ];
 
 const adminMenuItems: MenuItem[] = [
-  { href: '/dashboard/setup', label: 'Partner Setup', icon: UserPlus, roles: ['organizer'] },
+  { href: '/dashboard/email', label: 'Email Center', icon: Mail, roles: ['super_admin'] },
+  { href: '/dashboard/partners', label: 'Partner Portal', icon: Briefcase, roles: ['super_admin'] },
   { href: '/dashboard/whatsapp/developers', label: 'Developers', icon: Code, roles: ['super_admin'] },
+  { href: '/dashboard/whatsapp/logs', label: 'Logs', icon: History, roles: ['super_admin'] },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings, roles: ['super_admin'] },
+  { href: '/dashboard/setup', label: 'Setup', icon: UserPlus, roles: ['organizer'] },
 ];
 
 type User = {
@@ -282,18 +291,18 @@ export default function DashboardLayout({
         <SidebarInset className="flex text-clip overflow-hidden">
           {/* Header (Hidden on Inbox) */}
           {!isInbox && (
-            <header className="flex h-16 shrink-0 items-center gap-2 border-b border-sidebar-border/50 bg-white/80 dark:bg-slate-950/80 px-4 backdrop-blur-xl sticky top-0 z-10 shadow-sm supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-950/60 transition-all">
-              <div className="flex items-center gap-2 px-4">
+            <header className="flex h-16 shrink-0 items-center justify-between border-b border-sidebar-border/50 bg-white/80 dark:bg-slate-950/80 px-4 backdrop-blur-xl sticky top-0 z-10 shadow-sm supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-950/60 transition-all">
+              <div className="flex items-center gap-4 px-4 font-geist">
                 <Breadcrumb>
                   <BreadcrumbList>
                     <BreadcrumbItem className="hidden md:block">
-                      <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+                      <BreadcrumbLink href="/dashboard" className="text-slate-500 hover:text-[#2FBF71] transition-colors">Dashboard</BreadcrumbLink>
                     </BreadcrumbItem>
                     {pathname !== '/dashboard' && (
                       <>
                         <BreadcrumbSeparator className="hidden md:block" />
                         <BreadcrumbItem>
-                          <BreadcrumbPage className="capitalize">
+                          <BreadcrumbPage className="capitalize font-semibold text-slate-800 dark:text-slate-200">
                             {pathname?.split('/').pop()?.replace('-', ' ')}
                           </BreadcrumbPage>
                         </BreadcrumbItem>
@@ -301,6 +310,41 @@ export default function DashboardLayout({
                     )}
                   </BreadcrumbList>
                 </Breadcrumb>
+
+                {pathname?.includes('/whatsapp') && (
+                  <div className="flex items-center gap-2 ml-4 pl-4 border-l border-slate-200 dark:border-slate-800">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 gap-2 bg-[#2FBF71]/5 hover:bg-[#2FBF71]/10 text-[#2FBF71] border border-[#2FBF71]/20 rounded-lg px-3">
+                          <LayoutGrid className="w-4 h-4" />
+                          <span className="text-xs font-bold uppercase tracking-wider">WhatsApp CRM</span>
+                          <ChevronDown className="w-3 h-3 opacity-50" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-56 p-2 rounded-xl border-slate-200 dark:border-slate-800 shadow-2xl backdrop-blur-xl">
+                        {[
+                          { href: '/dashboard/whatsapp/inbox', label: 'Inbox', icon: MessageSquare },
+                          { href: '/dashboard/whatsapp/campaigns', label: 'Campaigns', icon: Send },
+                          { href: '/dashboard/whatsapp/automations', label: 'Automations', icon: Bot },
+                          { href: '/dashboard/whatsapp/templates', label: 'Templates', icon: ScrollText },
+                          { href: '/dashboard/whatsapp/contacts', label: 'Contacts', icon: Users },
+                          { href: '/dashboard/whatsapp/analytics', label: 'Analytics', icon: BarChart },
+                        ].map((item) => (
+                          <DropdownMenuItem key={item.href} asChild className="rounded-lg mb-1 last:mb-0">
+                            <Link href={item.href} className="flex items-center gap-3 p-2 cursor-pointer hover:bg-[#2FBF71]/10 hover:text-[#2FBF71] transition-all">
+                              <div className={`p-1.5 rounded-md ${pathname === item.href ? 'bg-[#2FBF71] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                                <item.icon className="w-3.5 h-3.5" />
+                              </div>
+                              <span className={`text-sm ${pathname === item.href ? 'font-bold text-[#2FBF71]' : 'font-medium text-slate-600 dark:text-slate-300'}`}>
+                                {item.label}
+                              </span>
+                            </Link>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )}
               </div>
             </header>
           )}
