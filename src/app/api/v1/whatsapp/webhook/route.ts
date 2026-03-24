@@ -14,8 +14,6 @@ export async function GET(req: NextRequest) {
     const token = searchParams.get('hub.verify_token');
     const challenge = searchParams.get('hub.challenge');
 
-    console.log('[Webhook GET] Query:', { mode, token, expected: VERIFY_TOKEN });
-
     if (mode === 'subscribe' && token === VERIFY_TOKEN) {
         return new NextResponse(challenge, { status: 200 });
     }
