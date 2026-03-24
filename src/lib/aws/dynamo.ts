@@ -1,5 +1,5 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand, GetCommand, QueryCommand, UpdateCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, GetCommand, QueryCommand, UpdateCommand, DeleteCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 
 const client = new DynamoDBClient({
   region: process.env.MY_AWS_REGION || "ap-south-2",
@@ -31,3 +31,12 @@ export const queryGSI1 = (gsi1pk: string) => docClient.send(new QueryCommand({
 }));
 
 export const deleteItem = (pk: string, sk: string) => docClient.send(new DeleteCommand({ TableName: TABLE_NAME, Key: { pk, sk } }));
+
+export const scanTable = () => docClient.send(new ScanCommand({ TableName: TABLE_NAME }));
+
+export const updateTenantId = (pk: string, sk: string, tenantId: string) => docClient.send(new UpdateCommand({
+    TableName: TABLE_NAME,
+    Key: { pk, sk },
+    UpdateExpression: "SET tenant_id = :tid",
+    ExpressionAttributeValues: { ":tid": tenantId }
+}));

@@ -1,14 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { queryByPk, putItem, getItem } from '@/lib/aws/dynamo';
 import { sendWhatsAppTextMessage } from '@/lib/whatsapp';
-import { normalizePhone } from '@/lib/normalization';
+import { getAuthSession } from '@/lib/auth';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
-        const { id } = await params; // Normalized phone
+        const { id } = await params;
+        const session = await getAuthSession();
+        if (!session) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const response = await queryByPk(`MSG#${id}`);
+        let items = response.Items || [];
+
+        // If not super_admin, filter by tenant_id
+        if (session.role !== 'super_admin') {
+            items = items.filter(item => item.tenant_id === session.id || item.tenant_id === session.email);
+        }
         
-        const items = (response.Items || []).sort((a: any, b: any) => 
+        items.sort((a: any, b: any) => 
             new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
         );
 
@@ -21,7 +32,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
-        const { id } = await params; // Normalized phone
+        const { id } = await params;
+        const session = await getAuthSession();
+        if (!session) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const { content, type } = await req.json();
 
         // 1. Send to Meta
@@ -42,7 +58,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             status: 'sent',
             created_at: now,
             sender_type: 'agent',
-            whatsapp_id: waId
+            whatsapp_id: waId,
+            tenant_id: session.email // Defaulting to email as tenant_id
         };
         await putItem(msgItem);
 
@@ -55,7 +72,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             await putItem({
                 ...conv,
                 last_message: content,
-                last_message_at: now
+                last_message_at: now,
+                tenant_id: conv.tenant_id || session.email // Ensure tenant_id persists
             });
         }
 
