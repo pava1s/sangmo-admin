@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { queryGSI1, putItem, deleteItem } from '@/lib/aws/dynamo';
 import { v4 as uuidv4 } from 'uuid';

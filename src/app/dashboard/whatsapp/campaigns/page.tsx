@@ -27,6 +27,7 @@ import {
   X,
   BarChart,
   Lock,
+  Users
 } from 'lucide-react';
 import { DashboardEmptyState } from '@/components/dashboard/EmptyState';
 import * as React from 'react';
