@@ -14,7 +14,16 @@ export async function GET(req: NextRequest) {
     const token = searchParams.get('hub.verify_token');
     const challenge = searchParams.get('hub.challenge');
 
-    if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+    console.log('[Webhook GET] Received Token:', `"${token}"`);
+    console.log('[Webhook GET] Expected Token:', `"${VERIFY_TOKEN}"`);
+
+    const isMatch = (mode === 'subscribe' && token?.trim() === VERIFY_TOKEN?.trim());
+    
+    // TEMPORARY BYPASS: If you are 100% sure the URL is correct but Meta still fails,
+    // you can uncomment the next line to bypass verification temporarily.
+    // if (mode === 'subscribe') return new NextResponse(challenge, { status: 200 });
+
+    if (isMatch) {
         return new NextResponse(challenge, { status: 200 });
     }
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
