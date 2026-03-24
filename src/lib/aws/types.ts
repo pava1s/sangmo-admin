@@ -13,6 +13,20 @@ export interface Conversation {
   assigned_to?: string;
   platform: 'Whatsapp' | 'Email';
   customerId?: string;
+  tenant_id?: string;
+}
+
+export interface Booking {
+  id: string;
+  pk: string; // TENANT#<orgId>
+  sk: string; // BOOKING#<id>
+  traveler_name: string;
+  trek_name: string;
+  date: string;
+  status: 'Pending' | 'Confirmed' | 'Cancelled';
+  organizer_id: string;
+  organizer_name: string;
+  created_at: string;
 }
 
 export interface Message {
@@ -28,6 +42,7 @@ export interface Message {
   attachment_url?: string;
   attachment_type?: string;
   metadata?: any;
+  tenant_id?: string;
 }
 
 export interface Customer {
@@ -40,6 +55,7 @@ export interface Customer {
   tags: string[];
   custom_data: Record<string, any>;
   created_at: string;
+  tenant_id?: string;
 }
 
 export interface Note {

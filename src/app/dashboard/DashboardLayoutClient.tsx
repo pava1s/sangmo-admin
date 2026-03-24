@@ -17,8 +17,13 @@ import {
   Bot,
   BarChart,
   DollarSign,
-  Code
+  Code,
+  Mail,
+  Calendar,
+  Briefcase,
+  UserPlus
 } from 'lucide-react';
+import { getSession, isSuperAdmin } from '@/lib/auth';
 
 import {
   SidebarProvider,
@@ -66,20 +71,17 @@ type MenuItem = {
 };
 
 const menuItems: MenuItem[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['Super Admin', 'Tech', 'Admin', 'Administrator', 'Marketing', 'Customer Support', 'Internal Staff'] },
-  { href: '/dashboard/inbox', label: 'Inbox', icon: MessageSquare, roles: ['Super Admin', 'Tech', 'Admin', 'Administrator', 'Marketing', 'Customer Support', 'Internal Staff'] },
-  { href: '/dashboard/contacts', label: 'Contacts', icon: Users, roles: ['Super Admin', 'Tech', 'Admin', 'Administrator'] },
-  { href: '/dashboard/campaigns', label: 'Campaigns', icon: Send, roles: ['Super Admin', 'Tech', 'Admin', 'Administrator', 'Marketing', 'Internal Staff'] },
-  { href: '/dashboard/automations', label: 'Automations', icon: Bot, roles: ['Super Admin', 'Tech', 'Admin', 'Administrator', 'Marketing', 'Customer Support', 'Internal Staff'] },
-  { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart, roles: ['Super Admin', 'Admin', 'Tech', 'Manager'] },
-  { href: '/dashboard/deals', label: 'Sales', icon: DollarSign, roles: ['Super Admin', 'Admin', 'Tech', 'Marketing', 'Manager'] },
-  { href: '/dashboard/templates', label: 'Templates', icon: ScrollText, roles: ['Super Admin', 'Tech', 'Admin', 'Administrator', 'Marketing', 'Customer Support', 'Internal Staff'] },
+  { href: '/dashboard', label: 'Service Hub', icon: LayoutDashboard, roles: ['super_admin', 'organizer'] },
+  { href: '/dashboard/whatsapp/inbox', label: 'WhatsApp CRM', icon: MessageSquare, roles: ['super_admin'] },
+  { href: '/dashboard/bookings', label: 'Booking Manager', icon: Calendar, roles: ['super_admin', 'organizer'] },
+  { href: '/dashboard/email', label: 'Email Center', icon: Mail, roles: ['super_admin'] },
+  { href: '/dashboard/partners', label: 'Partner Portal', icon: Briefcase, roles: ['super_admin'] },
 ];
 
 const adminMenuItems: MenuItem[] = [
-  { href: '/dashboard/logs', label: 'Activity Logs', icon: History, roles: ['Super Admin', 'Tech', 'Admin', 'Administrator'] },
-  { href: '/dashboard/developers', label: 'Developers', icon: Code, roles: ['Super Admin', 'Tech', 'Admin', 'Administrator'] },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings, roles: ['Super Admin', 'Tech', 'Admin', 'Administrator'] },
+  { href: '/dashboard/setup', label: 'Partner Setup', icon: UserPlus, roles: ['organizer'] },
+  { href: '/dashboard/whatsapp/developers', label: 'Developers', icon: Code, roles: ['super_admin'] },
+  { href: '/dashboard/settings', label: 'Settings', icon: Settings, roles: ['super_admin'] },
 ];
 
 type User = {
@@ -104,12 +106,12 @@ export default function DashboardLayout({
   React.useEffect(() => {
     async function checkAuth() {
       try {
-        // Mocking user for now - will be replaced by AWS Cognito
+        const session = getSession();
         setUser({
-          id: 'admin-1',
-          name: 'Sangmo Admin',
-          email: 'admin@sangmo.com',
-          role: 'Super Admin',
+          id: session.role === 'super_admin' ? 'admin-1' : 'org-1',
+          name: session.role === 'super_admin' ? 'Sangmo Master' : 'Partner Organizer',
+          email: session.email,
+          role: session.role,
           avatar: ''
         });
       } catch (error) {

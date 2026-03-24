@@ -160,7 +160,7 @@ function DealCard({ deal }: { deal: Deal }) {
                     {deal.value?.toLocaleString()}
                 </div>
                 {deal.customers?.id && (
-                    <Link href={`/dashboard/inbox?customer=${deal.customers.id}`} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-400 hover:text-blue-500 transition-colors">
+                    <Link href={`/dashboard/whatsapp/inbox?customer=${deal.customers.id}`} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-400 hover:text-blue-500 transition-colors">
                         <MessageSquare className="w-4 h-4" />
                     </Link>
                 )}

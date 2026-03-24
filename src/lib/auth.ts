@@ -1,26 +1,44 @@
-export type User = {
-  id: string;
-  name: string;
-  email: string;
-  role: 'Super Admin' | 'Admin' | 'Administrator' | 'Marketing' | 'Customer Support' | 'Internal Staff' | 'Tech' | 'agent' | 'super_admin' | 'tech_support' | 'admin';
-  avatar: string;
-  permissions?: Record<string, boolean>;
+
+export type UserRole = 'super_admin' | 'organizer';
+
+export interface UserSession {
+    email: string;
+    role: UserRole;
+    orgId?: string;
+}
+
+// Current Mock Auth using the Super Admin email provided by the user
+const SUPER_ADMIN_EMAIL = 'pavansrinivas64@gmail.com';
+
+export function getSession(): UserSession {
+    // In a real app, this would come from a cookie or Auth header
+    // For this migration, we mock it based on the user's instructions
+    return {
+        email: SUPER_ADMIN_EMAIL,
+        role: 'super_admin'
+    };
+}
+
+export function isSuperAdmin(session: UserSession): boolean {
+    return session.role === 'super_admin' && session.email === SUPER_ADMIN_EMAIL;
+}
+
+export function isOrganizer(session: UserSession): boolean {
+    return session.role === 'organizer';
+}
+
+export const ROLE_PERMISSIONS = {
+    super_admin: [
+        'whatsapp',
+        'email',
+        'bookings',
+        'partners',
+        'analytics',
+        'developers',
+        'settings'
+    ],
+    organizer: [
+        'bookings',
+        'setup'
+    ]
 };
-
-// ✅ MOCK AUTH: Bypasses Supabase for the standalone admin dashboard
-export async function getCurrentUser(): Promise<User | null> {
-  // Mocking a logged-in Super Admin
-  return {
-    id: 'admin-123',
-    name: 'Wanderlynx Admin',
-    email: 'admin@wanderlynx.com',
-    avatar: `https://ui-avatars.com/api/?name=Admin&background=random`,
-    role: 'Super Admin',
-    permissions: { '*': true },
-  };
-}
-
-export async function logout() {
-  console.log("Mock logout triggered");
-  window.location.href = '/';
-}

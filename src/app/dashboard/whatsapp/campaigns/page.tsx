@@ -78,7 +78,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { getCurrentUser, User } from '@/lib/auth';
+import { getSession, UserSession, isSuperAdmin } from '@/lib/auth';
 import { apiClient as api } from '@/lib/api-client';
 
 // FIX: Added 'as const' to all variants to solve Badge TypeScript errors
@@ -430,12 +430,12 @@ export default function CampaignsPage() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [confirmationState, setConfirmationState] = React.useState<ConfirmationState>({ action: null, campaign: null });
   const { toast } = useToast();
-  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
+  const [currentUser, setCurrentUser] = React.useState<UserSession | null>(null);
 
   React.useEffect(() => {
     async function loadUser() {
-      const user = await getCurrentUser();
-      setCurrentUser(user);
+      const session = getSession();
+      setCurrentUser(session);
     }
     loadUser();
   }, []);
@@ -495,7 +495,7 @@ export default function CampaignsPage() {
     return <div className="flex justify-center items-center h-full"><Loader className="h-8 w-8 animate-spin" /></div>;
   }
 
-  if (currentUser.role === 'Customer Support') {
+  if (currentUser.role !== 'super_admin') {
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-6 p-6 md:gap-8 md:p-10 text-center">
         <Lock className="h-16 w-16 text-muted-foreground" />
@@ -550,7 +550,7 @@ export default function CampaignsPage() {
               const isPaused = campaign.status === 'Paused';
               const isDone = campaign.status === 'Completed' || campaign.status === 'Failed';
 
-              const canSendNow = currentUser.role === 'Super Admin';
+              const canSendNow = isSuperAdmin(currentUser);
 
               return (
                 <Card key={campaign.id} className="group relative transition-all hover:shadow-lg flex flex-col">
@@ -621,9 +621,15 @@ export default function CampaignsPage() {
                           </ActionMenuItem>
                         )}
 
+                        <Link href="/dashboard/whatsapp/contacts" className="text-xs font-medium text-blue-600 hover:underline">
+                          <DropdownMenuItem className="cursor-pointer">
+                            <div className="flex items-center w-full"><Users className="mr-2 h-4 w-4" /> View Contacts</div>
+                          </DropdownMenuItem>
+                        </Link>
+
                         <DropdownMenuSeparator />
                         <ActionMenuItem disabled={!isDone}>
-                          <Link href={`/dashboard/campaigns/${campaign.id}`} className="flex items-center"><BarChart className="mr-2 h-4 w-4" /> View Report</Link>
+                          <Link href={`/dashboard/whatsapp/campaigns/${campaign.id}`} className="flex items-center"><BarChart className="mr-2 h-4 w-4" /> View Report</Link>
                         </ActionMenuItem>
                         <ActionMenuItem onClick={() => setConfirmationState({ action: 'Archive', campaign })}>
                           <div className="flex items-center w-full text-destructive"><Archive className="mr-2 h-4 w-4" /> Archive</div>

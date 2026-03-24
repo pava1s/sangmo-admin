@@ -99,7 +99,7 @@ export default function CampaignDetailPage() {
     <main className="flex flex-1 flex-col gap-6 p-6 md:gap-8 md:p-10">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" className="h-7 w-7" asChild>
-          <Link href="/dashboard/campaigns">
+          <Link href="/dashboard/whatsapp/campaigns">
             <ArrowLeft className="h-4 w-4" />
             <span className="sr-only">Back</span>
           </Link>
