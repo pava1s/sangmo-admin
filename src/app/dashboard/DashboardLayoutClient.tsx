@@ -74,23 +74,44 @@ type MenuItem = {
 
 const menuItems: MenuItem[] = [
   { href: '/dashboard', label: 'Service Hub', icon: LayoutDashboard, roles: ['super_admin', 'organizer'] },
-  { href: '/dashboard/bookings', label: 'Bookings', icon: Calendar, roles: ['super_admin', 'organizer'] },
-  { href: '/dashboard/whatsapp/inbox', label: 'Inbox', icon: MessageSquare, roles: ['super_admin'] },
-  { href: '/dashboard/whatsapp/campaigns', label: 'Campaigns', icon: Send, roles: ['super_admin'] },
-  { href: '/dashboard/whatsapp/automations', label: 'Automations', icon: Bot, roles: ['super_admin'] },
-  { href: '/dashboard/whatsapp/templates', label: 'Templates', icon: ScrollText, roles: ['super_admin'] },
-  { href: '/dashboard/whatsapp/contacts', label: 'Contacts', icon: Users, roles: ['super_admin'] },
-  { href: '/dashboard/whatsapp/analytics', label: 'Analytics', icon: BarChart, roles: ['super_admin'] },
-  { href: '/dashboard/whatsapp/deals', label: 'Deals', icon: DollarSign, roles: ['super_admin'] },
 ];
 
 const adminMenuItems: MenuItem[] = [
-  { href: '/dashboard/email', label: 'Email Center', icon: Mail, roles: ['super_admin'] },
-  { href: '/dashboard/partners', label: 'Partner Portal', icon: Briefcase, roles: ['super_admin'] },
   { href: '/dashboard/whatsapp/developers', label: 'Developers', icon: Code, roles: ['super_admin'] },
   { href: '/dashboard/whatsapp/logs', label: 'Logs', icon: History, roles: ['super_admin'] },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings, roles: ['super_admin'] },
   { href: '/dashboard/setup', label: 'Setup', icon: UserPlus, roles: ['organizer'] },
+];
+
+const workspaceModules = [
+  { 
+    href: '/dashboard/whatsapp/inbox', 
+    label: 'WhatsApp CRM', 
+    desc: 'Customer messaging, inbox, and campaign automation.', 
+    icon: MessageSquare, 
+    color: 'bg-green-500' 
+  },
+  { 
+    href: '/dashboard/email', 
+    label: 'Email Center', 
+    desc: 'Itineraries, confirmations, and traveler updates.', 
+    icon: Mail, 
+    color: 'bg-blue-500' 
+  },
+  { 
+    href: '/dashboard/bookings', 
+    label: 'Booking Manager', 
+    desc: 'Logistics, traveler lists, and trek management.', 
+    icon: Calendar, 
+    color: 'bg-purple-500' 
+  },
+  { 
+    href: '/dashboard/partners', 
+    label: 'Partner Portal', 
+    desc: 'Manage organizers, payouts, and assignments.', 
+    icon: Briefcase, 
+    color: 'bg-orange-500' 
+  },
 ];
 
 type User = {
@@ -311,40 +332,44 @@ export default function DashboardLayout({
                   </BreadcrumbList>
                 </Breadcrumb>
 
-                {pathname?.includes('/whatsapp') && (
-                  <div className="flex items-center gap-2 ml-4 pl-4 border-l border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-2 ml-4 pl-4 border-l border-slate-200 dark:border-slate-800">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 gap-2 bg-[#2FBF71]/5 hover:bg-[#2FBF71]/10 text-[#2FBF71] border border-[#2FBF71]/20 rounded-lg px-3">
+                        <Button variant="ghost" size="sm" className="h-9 gap-2 bg-[#2FBF71]/5 hover:bg-[#2FBF71]/10 text-[#2FBF71] border border-[#2FBF71]/20 rounded-lg px-4 transition-all hover:scale-105 active:scale-95">
                           <LayoutGrid className="w-4 h-4" />
-                          <span className="text-xs font-bold uppercase tracking-wider">WhatsApp CRM</span>
+                          <span className="text-xs font-bold uppercase tracking-wider">Switch Workspace</span>
                           <ChevronDown className="w-3 h-3 opacity-50" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-56 p-2 rounded-xl border-slate-200 dark:border-slate-800 shadow-2xl backdrop-blur-xl">
-                        {[
-                          { href: '/dashboard/whatsapp/inbox', label: 'Inbox', icon: MessageSquare },
-                          { href: '/dashboard/whatsapp/campaigns', label: 'Campaigns', icon: Send },
-                          { href: '/dashboard/whatsapp/automations', label: 'Automations', icon: Bot },
-                          { href: '/dashboard/whatsapp/templates', label: 'Templates', icon: ScrollText },
-                          { href: '/dashboard/whatsapp/contacts', label: 'Contacts', icon: Users },
-                          { href: '/dashboard/whatsapp/analytics', label: 'Analytics', icon: BarChart },
-                        ].map((item) => (
-                          <DropdownMenuItem key={item.href} asChild className="rounded-lg mb-1 last:mb-0">
-                            <Link href={item.href} className="flex items-center gap-3 p-2 cursor-pointer hover:bg-[#2FBF71]/10 hover:text-[#2FBF71] transition-all">
-                              <div className={`p-1.5 rounded-md ${pathname === item.href ? 'bg-[#2FBF71] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
-                                <item.icon className="w-3.5 h-3.5" />
+                      <DropdownMenuContent align="start" className="w-[320px] p-3 rounded-2xl border-slate-200 dark:border-slate-800 shadow-2xl backdrop-blur-3xl bg-white/90 dark:bg-slate-950/90">
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 mb-3">Core Modules</div>
+                        {workspaceModules.map((module) => (
+                          <div key={module.href} className="group relative rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900 transition-all p-2 mb-2 last:mb-0 border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
+                            <div className="flex gap-4">
+                              <div className={`mt-1 h-10 w-10 shrink-0 rounded-xl ${module.color} bg-opacity-10 flex items-center justify-center text-white`}>
+                                <div className={`h-8 w-8 rounded-lg ${module.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+                                  <module.icon className="w-4 h-4" />
+                                </div>
                               </div>
-                              <span className={`text-sm ${pathname === item.href ? 'font-bold text-[#2FBF71]' : 'font-medium text-slate-600 dark:text-slate-300'}`}>
-                                {item.label}
-                              </span>
-                            </Link>
-                          </DropdownMenuItem>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-0.5">{module.label}</div>
+                                <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2 mb-2">
+                                  {module.desc}
+                                </div>
+                                <Link 
+                                  href={module.href} 
+                                  className="inline-flex items-center text-[10px] font-bold text-[#2FBF71] hover:underline gap-1 group/btn"
+                                >
+                                  Enter Module
+                                  <ChevronDown className="w-3 h-3 -rotate-90 group-hover:translate-x-0.5 transition-transform" />
+                                </Link>
+                              </div>
+                            </div>
+                          </div>
                         ))}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-                )}
               </div>
             </header>
           )}
