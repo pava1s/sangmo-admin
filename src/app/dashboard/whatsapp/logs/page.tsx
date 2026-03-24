@@ -39,7 +39,7 @@ import {
   TrendingUp,
   PieChart
 } from 'lucide-react';
-import { getCurrentUser, User } from '@/lib/auth';
+import { getAuthSession, User } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { apiClient as api } from '@/lib/api-client';
@@ -135,10 +135,10 @@ export default function LogsPage() {
   const loadPageData = React.useCallback(async () => {
     setIsLoading(true);
     try {
-      const user = await getCurrentUser();
+      const user = await getAuthSession();
       setCurrentUser(user);
 
-      if (['Super Admin', 'Admin', 'Administrator', 'Internal Staff', 'Tech'].includes(user?.role || '')) {
+      if (user?.role === 'super_admin') {
         const data = await api.getLogs();
         setLogs(Array.isArray(data) ? data : []);
 
@@ -276,8 +276,7 @@ export default function LogsPage() {
   // --- RENDERING ---
   if (isLoading) return <div className="flex h-screen items-center justify-center"><RefreshCcw className="h-8 w-8 animate-spin text-primary" /></div>;
 
-  const allowedRoles = ['Super Admin', 'Admin', 'Administrator', 'Internal Staff', 'Tech'];
-  if (!currentUser || !allowedRoles.includes(currentUser.role)) {
+  if (!currentUser || currentUser.role !== 'super_admin') {
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-6 p-6">
         <Lock className="h-16 w-16 text-muted-foreground" />

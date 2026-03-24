@@ -7,10 +7,15 @@ configureAmplify();
 export type UserRole = 'super_admin' | 'organizer';
 
 export interface UserSession {
+  id: string;
+  name: string;
   email: string;
   role: UserRole;
+  avatar?: string;
   organizations?: string[];
 }
+
+export type User = UserSession;
 
 export async function getAuthSession(): Promise<UserSession | null> {
   try {
@@ -28,8 +33,11 @@ export async function getAuthSession(): Promise<UserSession | null> {
     }
 
     return {
+      id: user.userId,
+      name: attributes.name || attributes.email?.split('@')[0] || 'User',
       email: attributes.email || '',
       role,
+      avatar: attributes.picture,
       organizations: groups.filter(g => g !== 'Admins' && g !== 'Organizers')
     };
   } catch (error) {
@@ -40,9 +48,9 @@ export async function getAuthSession(): Promise<UserSession | null> {
 
 // Temporary backward compatibility for components not yet converted to async
 export function getSession(): UserSession {
-  // We keep a mock fallback for the layout but prefer getAuthSession everywhere
-  // In a real app, you'd use a React Context to provide this.
   return {
+    id: 'mock-id',
+    name: 'Pavan',
     email: 'pavansrinivas64@gmail.com',
     role: 'super_admin'
   };

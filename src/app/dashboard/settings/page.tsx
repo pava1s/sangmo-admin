@@ -23,7 +23,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
-import { getCurrentUser, User } from '@/lib/auth';
+import { getAuthSession, User } from '@/lib/auth';
 import { Lock, Loader2, Trash2, Plus, Pencil } from 'lucide-react';
 import { apiClient as api } from '@/lib/api-client';
 import {
@@ -102,9 +102,9 @@ export default function SettingsPage() {
     React.useEffect(() => {
         async function loadData() {
             try {
-                const currentUser = await getCurrentUser();
+                const currentUser = await getAuthSession();
                 setUser(currentUser);
-                if (currentUser?.role === 'Super Admin') {
+                if (currentUser?.role === 'super_admin') {
                     await fetchTeam();
                     // @ts-ignore
                     const settings = await api.getSystemSettings();
