@@ -45,6 +45,7 @@ export async function GET(req: NextRequest) {
                 id: item.id || item.pk || `ID-${Math.random().toString(36).substr(2, 9)}`,
                 customer_name: customerName,
                 last_message: messageBody,
+                message: messageBody, // Redundant field for UI compatibility
                 last_message_at: item.last_message_at || item.created_at || item.timestamp || new Date(0).toISOString(),
                 raw_data: item, // Explicit raw_data field for emergency UI debugging
             };

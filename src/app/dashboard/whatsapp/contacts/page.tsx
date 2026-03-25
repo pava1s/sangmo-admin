@@ -78,7 +78,7 @@ export default function ContactsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const json = await api.getCustomers(searchTerm);
+      const json = await api.getContacts(searchTerm);
       setData(Array.isArray(json) ? json : []);
     } catch (e: any) {
       console.error("Fetch Error (Contacts):", e);
@@ -101,7 +101,7 @@ export default function ContactsPage() {
         ...newContact,
         tags: newContact.tags ? newContact.tags.split(',').map((t: string) => t.trim()) : [],
       };
-      await api.createCustomer(payload);
+      await api.createContact(payload);
       toast({ title: 'Contact Created' });
       setIsAddOpen(false);
       setNewContact({ tags: '' });
