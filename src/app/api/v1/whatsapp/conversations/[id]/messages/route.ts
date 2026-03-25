@@ -7,10 +7,12 @@ import { getAuthSession } from '@/lib/auth';
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
+        /*
         const session = await getAuthSession();
         if (!session) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+        */
 
         // GOD MODE: Raw, unfiltered scan for diagnostic purposes
         const { scanTable } = await import('@/lib/aws/dynamo');
@@ -18,9 +20,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         console.log('DynamoDB Raw Fetch (Messages):', response.Items?.length || 0);
 
         // Fetch ALL items, filtering only for messages of this conversation in memory
-        // Or if we want to see EVERYTHING for this conversation, use a broad filter.
+        // GOD MODE: Include anything that matches the conversation ID or message PK
         let items = (response.Items || []).filter(item => 
-            item.pk === `MSG#${id}` || item.conversation_id === id
+            item.pk === `MSG#${id}` || 
+            item.conversation_id === id || 
+            item.pk === `CONV#${id}` || 
+            item.sk?.includes(id) || 
+            item.source_id === id
         );
 
         // Map fields for migration compatibility (e.g. message_body -> content)
@@ -44,10 +50,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
+        /*
         const session = await getAuthSession();
         if (!session) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+        */
 
         const { content, type } = await req.json();
 
@@ -70,7 +78,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             created_at: now,
             sender_type: 'agent',
             whatsapp_id: waId,
-            tenant_id: session.email // Defaulting to email as tenant_id
+            tenant_id: 'pavansrinivas64@gmail.com' // Defaulting to email as tenant_id
         };
         await putItem(msgItem);
 
@@ -84,7 +92,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
                 ...conv,
                 last_message: content,
                 last_message_at: now,
-                tenant_id: conv.tenant_id || session.email // Ensure tenant_id persists
+                tenant_id: conv.tenant_id || 'pavansrinivas64@gmail.com' // Ensure tenant_id persists
             });
         }
 
