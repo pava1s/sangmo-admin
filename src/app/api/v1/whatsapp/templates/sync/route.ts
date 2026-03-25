@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { putItem } from '@/lib/aws/dynamo';
 import { getAuthSession } from '@/lib/auth';
 
+import { serverEnv } from '@/lib/server-env';
+
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
@@ -11,10 +13,8 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const {
-            WHATSAPP_ACCESS_TOKEN,
-            WHATSAPP_BUSINESS_ID
-        } = process.env;
+        const WHATSAPP_ACCESS_TOKEN = serverEnv.META_TOKEN;
+        const WHATSAPP_BUSINESS_ID = serverEnv.META_BIZ_ID;
 
         if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_BUSINESS_ID) {
             throw new Error('Meta API environment variables (WHATSAPP_ACCESS_TOKEN or WHATSAPP_BUSINESS_ID) are missing.');

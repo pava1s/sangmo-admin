@@ -1,18 +1,20 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand, GetCommand, QueryCommand, UpdateCommand, DeleteCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 
+import { serverEnv } from "@/lib/server-env";
+
 const client = new DynamoDBClient({
-  region: process.env.MY_AWS_REGION,
+  region: serverEnv.REGION,
   credentials: {
-    accessKeyId: process.env.MY_AWS_ACCESS_KEY_ID || "",
-    secretAccessKey: process.env.MY_AWS_SECRET_ACCESS_KEY || "",
+    accessKeyId: serverEnv.ACCESS_KEY_ID || "",
+    secretAccessKey: serverEnv.SECRET_ACCESS_KEY || "",
   },
   maxAttempts: 3
 });
 
 export const docClient = DynamoDBDocumentClient.from(client);
 
-export const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || "WanderlynxTable";
+export const TABLE_NAME = serverEnv.DYNAMODB_TABLE || "WanderlynxTable";
 
 export const putItem = (item: any) => docClient.send(new PutCommand({ TableName: TABLE_NAME, Item: item }));
 export const getItem = (pk: string, sk: string) => docClient.send(new GetCommand({ TableName: TABLE_NAME, Key: { pk, sk } }));

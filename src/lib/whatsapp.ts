@@ -1,3 +1,4 @@
+import { serverEnv } from '@/lib/server-env';
 import { Message } from './aws/types';
 
 export async function sendWhatsAppTemplateMessage(
@@ -5,10 +6,8 @@ export async function sendWhatsAppTemplateMessage(
     templateName: string,
     templateParams: string[]
 ) {
-    const {
-        WHATSAPP_ACCESS_TOKEN,
-        WHATSAPP_PHONE_NUMBER_ID
-    } = process.env;
+    const WHATSAPP_ACCESS_TOKEN = serverEnv.META_TOKEN;
+    const WHATSAPP_PHONE_NUMBER_ID = serverEnv.META_PHONE_ID;
 
     if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_NUMBER_ID) {
         throw new Error('WhatsApp environment variables are not configured.');
@@ -53,7 +52,8 @@ export async function sendWhatsAppTemplateMessage(
 }
 
 export async function sendWhatsAppTextMessage(to: string, text: string) {
-    const { WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID } = process.env;
+    const WHATSAPP_ACCESS_TOKEN = serverEnv.META_TOKEN;
+    const WHATSAPP_PHONE_NUMBER_ID = serverEnv.META_PHONE_ID;
 
     if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_NUMBER_ID) {
         throw new Error('WhatsApp environment variables are not configured.');
