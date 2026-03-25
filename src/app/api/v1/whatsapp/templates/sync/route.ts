@@ -32,8 +32,14 @@ export async function POST(req: NextRequest) {
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`Meta API Error: ${JSON.stringify(errorData)}`);
+            const rawError = await response.json();
+            console.error('RAW META ERROR BODY:', JSON.stringify(rawError, null, 2));
+            return NextResponse.json({ 
+                error: 'Meta API Unauthorized/Failed',
+                details: rawError,
+                message: rawError.error?.message || 'Unknown Meta error',
+                subcode: rawError.error?.error_subcode
+            }, { status: response.status });
         }
 
         const data = await response.json();
