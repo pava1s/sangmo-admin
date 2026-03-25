@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { queryGSI1, scanTable } from '@/lib/aws/dynamo';
 import { getAuthSession } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
     try {
         const session = await getAuthSession();
@@ -12,6 +14,10 @@ export async function GET(req: NextRequest) {
         // GOD MODE: Raw, unfiltered scan for diagnostic purposes
         const response = await scanTable();
         console.log('DynamoDB Raw Fetch (Conversations):', response.Items?.length || 0);
+
+        if (!response.Items || response.Items.length === 0) {
+            console.warn('DYNAMODB FETCH: 0 items returned from scanTable()');
+        }
 
         // Fetch ALL items from the table, filtering only for conversation type in memory
         const items = (response.Items || []).filter(item => 
@@ -33,7 +39,8 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json({ conversations: mappedItems });
     } catch (error: any) {
-        console.error('[API] Get Conversations Error:', error);
+        console.error('DYNAMODB FETCH ERROR:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
+

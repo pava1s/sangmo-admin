@@ -19,7 +19,13 @@ import {
 import { apiClient as api } from '@/lib/api-client';
 
 export default function AnalyticsPage() {
-    const [data, setData] = React.useState<any>(null);
+    const [data, setData] = React.useState<any>({
+        totalMessages: 0,
+        openConversations: 0,
+        closedConversations: 0,
+        volume: [],
+        teamDistribution: []
+    });
     const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
@@ -30,23 +36,21 @@ export default function AnalyticsPage() {
                     setData(json);
                 }
             } catch (e) {
-                console.error("Failed to fetch analytics", e);
+                console.error("CRITICAL ANALYTICS ERROR:", e);
+                // Keep existing defaults
             } finally {
                 setLoading(false);
             }
         }
 
         loadData();
-        // Placeholder for AWS Realtime or periodic refresh
-        const interval = setInterval(loadData, 30000); // 30s refresh
+        const interval = setInterval(loadData, 30000);
         return () => clearInterval(interval);
     }, []);
 
     if (loading) {
-        return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+        return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-[#2FBF71]" /></div>;
     }
-
-    if (!data) return <div>Failed to load data.</div>;
 
     return (
         <div className="flex-1 space-y-4 p-8 pt-6 bg-slate-50 dark:bg-slate-950 min-h-screen">
