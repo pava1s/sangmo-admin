@@ -139,7 +139,7 @@ function CreateCampaignDialog({
         setTemplates(templates);
 
         // Fetch Contacts to extract Tags
-        const contacts = await api.getCustomers();
+        const contacts = await api.getContacts();
         const tags = new Set<string>();
         contacts.forEach((c: any) => {
           if (Array.isArray(c.tags)) c.tags.forEach((t: string) => tags.add(t));
