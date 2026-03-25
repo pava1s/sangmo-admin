@@ -62,7 +62,7 @@ const statusConfig = {
   APPROVED: {
     variant: 'default',
     icon: CheckCircle,
-    className: 'bg-green-100 text-green-800 border-green-200 ring-green-500/10',
+    className: 'bg-green-100 text-green-800 border-green-200 shadow-sm ring-1 ring-green-900/5 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800',
   },
   Pending: {
     variant: 'secondary',

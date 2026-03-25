@@ -10,8 +10,10 @@ import {
 import { apiClient as api } from '@/lib/api-client';
 import { Conversation, Message, Customer } from '@/lib/aws/types';
 import { DashboardEmptyState } from '@/components/dashboard/EmptyState';
+import { useToast } from '@/hooks/use-toast';
 
 export default function InboxPage() {
+  const { toast } = useToast();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -354,7 +356,7 @@ export default function InboxPage() {
       )}
 
       <div className="flex h-full w-full overflow-hidden">
-      <div className="flex w-[320px] shrink-0 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+      <div className="flex w-[350px] shrink-0 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
         <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <h1 className="text-xl font-bold flex items-center gap-2">
             <div className="w-6 h-6 bg-red-500 rounded text-white flex items-center justify-center text-xs font-bold">W</div>
@@ -442,7 +444,7 @@ export default function InboxPage() {
                </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-[#020617]">
+            <div className="flex-1 overflow-y-auto p-8 bg-[#f8fafc] dark:bg-[#020617] scroll-smooth">
               {isMessagesLoading ? (
                 <div className="space-y-4">
                   {[1, 2, 3].map((i) => (
@@ -472,28 +474,25 @@ export default function InboxPage() {
                         className={`flex w-full mb-4 ${m.direction === 'outbound' ? 'justify-end' : 'justify-start'}`}
                       >
                         {isTemplate ? (
-                          <div className="max-w-[80%] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
-                            <div className="bg-slate-50 dark:bg-slate-800/50 px-4 py-2 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
-                              <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded flex items-center justify-center">
-                                <FileText className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                              </div>
-                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Template Sent</span>
+                          <div className="max-w-[80%] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+                            <div className="bg-slate-100 dark:bg-slate-800 px-4 py-1.5 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2">
+                              <FileText className="h-3 w-3 text-slate-500" />
+                              <span className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">Template Sent</span>
                             </div>
-                            <div className="px-4 py-3">
-                              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">{displayContent}</p>
-                              <div className="flex items-center justify-between mt-2">
-                                <span className="text-[10px] text-slate-400">{new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                <div className="flex items-center gap-0.5 text-emerald-500">
-                                  <Check className="h-3 w-3" />
-                                  <Check className="h-3 w-3 -ml-1.5" />
-                                </div>
+                            <div className="px-4 py-3 bg-white dark:bg-slate-900">
+                              <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{displayContent}</p>
+                            </div>
+                            <div className="px-4 py-1.5 bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-end gap-1.5">
+                              <span className="text-[10px] text-blue-600 font-bold uppercase tracking-tighter">Delivered</span>
+                              <div className="flex items-center text-blue-500">
+                                <CheckCircle2 className="h-3 w-3" />
                               </div>
                             </div>
                           </div>
                         ) : (
-                          <div className={`max-w-[75%] px-4 py-2 rounded-2xl text-sm ${m.direction === 'outbound' ? 'bg-sky-500 text-white rounded-tr-none shadow-md shadow-sky-500/20' : 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-tl-none border border-slate-100 dark:border-slate-800 shadow-sm'}`}>
+                          <div className={`max-w-[75%] px-4 py-2 rounded-2xl text-sm ${m.direction === 'outbound' ? 'bg-[#00a884] text-white rounded-tr-none shadow-sm' : 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-tl-none border border-slate-200 dark:border-slate-800 shadow-sm'}`}>
                             {m.content}
-                            <div className="text-[10px] opacity-70 mt-1 text-right italic font-medium">
+                            <div className="text-[10px] opacity-70 mt-1 text-right font-medium">
                               {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </div>
                           </div>
@@ -530,33 +529,84 @@ export default function InboxPage() {
         )}
       </div>
 
-      {/* 3. RIGHT PANEL: CUSTOMER INFO */}
-      <div className="w-[300px] shrink-0 border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-6 overflow-y-auto">
+      <div className="w-[340px] shrink-0 border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-col overflow-hidden">
         {customer ? (
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">
-                {customer.full_name ? customer.full_name[0].toUpperCase() : '?'}
+          <div className="flex-1 flex flex-col overflow-y-auto">
+            <div className="p-6 text-center border-b border-slate-100 dark:border-slate-900">
+              <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-2xl font-black mx-auto mb-4 border-2 border-emerald-100 shadow-inner">
+                {customer.full_name ? customer.full_name[0].toUpperCase() : 'G'}
               </div>
-              <h3 className="font-bold">{customer.full_name}</h3>
-              <p className="text-xs text-slate-400">{customer.phone}</p>
+              <h3 className="font-bold text-lg">{customer.full_name || 'Guest User'}</h3>
+              <div className="flex items-center justify-center gap-2 mt-1">
+                <p className="text-xs text-slate-500 font-mono">{customer.phone}</p>
+                <button onClick={() => { navigator.clipboard.writeText(customer.phone!); toast({ title: "Copied", description: "Phone number copied to clipboard" }); }} className="p-1 hover:bg-slate-100 rounded text-slate-400 transition-colors">
+                   <Paperclip className="h-3 w-3" />
+                </button>
+              </div>
             </div>
             
-            <div className="space-y-4 pt-4 border-t">
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Email</label>
-                <p className="text-sm">{customer.email || '-'}</p>
+            <div className="p-6 space-y-5">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Email</label>
+                  <p className="text-xs font-medium truncate">{customer.email || 'N/A'}</p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Location</label>
+                  <p className="text-xs font-medium">{customer.location || 'Bangalore, IN'}</p>
+                </div>
               </div>
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Location</label>
-                <p className="text-sm">{customer.location || '-'}</p>
+
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-900 space-y-4">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-yellow-600 uppercase tracking-widest flex items-center gap-2">
+                    <Tag className="h-3 w-3" /> Internal Context Notes
+                  </label>
+                  <div className="relative">
+                    <textarea 
+                      value={noteInput}
+                      onChange={(e) => setNoteInput(e.target.value)}
+                      placeholder="Add an internal note for the team..."
+                      className="w-full h-24 p-3 text-xs bg-yellow-50 border-l-4 border-yellow-400 rounded-r-lg focus:outline-none resize-none text-slate-700"
+                    />
+                    <button 
+                      onClick={handleSaveNote}
+                      disabled={!noteInput.trim() || isNotesLoading}
+                      className="absolute bottom-2 right-2 px-3 py-1.5 bg-yellow-400 text-yellow-900 text-[10px] font-black rounded hover:bg-yellow-500 transition-colors disabled:opacity-50 uppercase tracking-tighter"
+                    >
+                      {isNotesLoading ? 'Saving...' : 'Save Note'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Historical Timeline</h4>
+                   <div className="space-y-3">
+                      {notes.length === 0 ? (
+                        <p className="text-[10px] text-slate-400 italic">No historical notes for this contact.</p>
+                      ) : (
+                        notes.map((note, i) => (
+                          <div key={i} className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-800 relative group">
+                            <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">{note.content}</p>
+                            <div className="flex items-center justify-between mt-2">
+                              <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{note.author_name}</span>
+                              <span className="text-[9px] text-slate-300">{new Date(note.created_at).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                   </div>
+                </div>
               </div>
             </div>
           </div>
         ) : (
-          <div className="text-center text-slate-400 py-12">
-            <User className="w-12 h-12 mx-auto mb-2 opacity-20" />
-            <p className="text-sm">Select a chat to see customer details</p>
+          <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-12 text-center">
+            <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 transition-transform hover:scale-110">
+              <User className="w-8 h-8 opacity-20" />
+            </div>
+            <p className="text-sm font-medium">No Contact Selected</p>
+            <p className="text-xs opacity-60 mt-1">Select a conversation to view participant details and notes.</p>
           </div>
         )}
       </div>
