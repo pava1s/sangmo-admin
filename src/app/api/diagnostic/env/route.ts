@@ -4,10 +4,10 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const envVars = {
-    AWS_REGION: !!process.env.MY_AWS_REGION,
-    AWS_ACCESS_KEY_ID: !!process.env.MY_AWS_ACCESS_KEY_ID,
-    AWS_SECRET_ACCESS_KEY: !!process.env.MY_AWS_SECRET_ACCESS_KEY,
-    DYNAMODB_TABLE_NAME: !!process.env.WANDERLYNX_TABLE_NAME || !!process.env.DYNAMODB_TABLE_NAME, // Check both
+    MY_AWS_REGION: !!process.env.MY_AWS_REGION,
+    MY_AWS_ACCESS_KEY_ID: !!process.env.MY_AWS_ACCESS_KEY_ID,
+    MY_AWS_SECRET_ACCESS_KEY: !!process.env.MY_AWS_SECRET_ACCESS_KEY,
+    DYNAMODB_TABLE_NAME: !!process.env.DYNAMODB_TABLE_NAME, // Primary check
     WHATSAPP_ACCESS_TOKEN: !!process.env.WHATSAPP_ACCESS_TOKEN,
     WHATSAPP_BUSINESS_ID: !!process.env.WHATSAPP_BUSINESS_ID,
     WHATSAPP_PHONE_NUMBER_ID: !!process.env.WHATSAPP_PHONE_NUMBER_ID,
