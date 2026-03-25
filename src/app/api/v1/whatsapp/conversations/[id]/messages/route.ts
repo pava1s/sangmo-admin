@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { queryByPk, putItem, getItem } from '@/lib/aws/dynamo';
 import { sendWhatsAppTextMessage } from '@/lib/whatsapp';

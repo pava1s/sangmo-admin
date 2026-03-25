@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { scanTable, updateTenantId } from '@/lib/aws/dynamo';
 import { getAuthSession } from '@/lib/auth';
 
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
     try {
         const session = await getAuthSession();
         if (session?.role !== 'super_admin') {

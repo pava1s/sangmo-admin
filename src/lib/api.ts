@@ -41,9 +41,9 @@ export const api = {
   markAsRead: (id: string) => Promise.resolve({ success: true }),
   getConversationNotes: (id: string) => Promise.resolve({ notes: [] }),
   createConversationNote: (id: string, data: any) => Promise.resolve({ note: data }),
-  // Customers
-  getCustomer: (id: string) => apiFetch(`/customers/${id}`),
-  updateCustomer: (id: string, data: any) => Promise.resolve(data),
+  // Contacts
+  getContact: (id: string) => apiFetch(`/contacts/${id}`),
+  updateContact: (id: string, data: any) => Promise.resolve(data),
   // Team
   getTeamMembers: () => Promise.resolve([]),
   inviteTeamMember: (data: any) => Promise.resolve(data),

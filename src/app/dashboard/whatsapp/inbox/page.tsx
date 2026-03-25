@@ -179,7 +179,7 @@ export default function InboxPage() {
       setIsCustomerLoading(true); setCustomer(null); setIsEditingCustomer(false);
       try {
         if (!id) return;
-        const data = await api.getCustomerById(id);
+        const data = await api.getContactById(id);
         setCustomer(data);
         setEditForm(data);
       } catch (e) { console.error("Fetch customer error", e); }
@@ -260,7 +260,7 @@ export default function InboxPage() {
   const handleSaveCustomer = async () => {
     if (!customer?.id) return;
     try {
-      const data = await api.updateCustomer(customer.id, editForm);
+      const data = await api.updateContact(customer.id, editForm);
       const newC = data;
       setCustomer(newC); setEditForm(newC); setIsEditingCustomer(false);
     } catch (e) { console.error("Save customer error", e); }
