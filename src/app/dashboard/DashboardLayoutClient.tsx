@@ -385,42 +385,12 @@ export default function DashboardLayout({
                 </div>
               </header>
             )}
-
-            {/* Contextual Sub-Header (Horizontal Tabs) for WhatsApp Routes */}
-            {pathname?.startsWith('/dashboard/whatsapp') && (
-              <div className="flex items-center gap-1 border-b border-sidebar-border/30 bg-white/40 dark:bg-slate-950/40 px-8 py-2 backdrop-blur-md overflow-x-auto no-scrollbar">
-                {[
-                  { label: 'Inbox', href: '/dashboard/whatsapp/inbox' },
-                  { label: 'Campaigns', href: '/dashboard/whatsapp/campaigns' },
-                  { label: 'Templates', href: '/dashboard/whatsapp/templates' },
-                  { label: 'Contacts', href: '/dashboard/whatsapp/contacts' },
-                  { label: 'Analytics', href: '/dashboard/whatsapp/analytics' },
-                  { label: 'Billing', href: '/dashboard/whatsapp/billing' }
-                ].map((tab) => {
-                  const isActive = pathname === tab.href || (tab.href !== '/dashboard/whatsapp/inbox' && pathname.startsWith(tab.href));
-                  return (
-                    <Link
-                      key={tab.href}
-                      href={tab.href}
-                      className={`
-                        flex items-center px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 whitespace-nowrap
-                        ${isActive 
-                          ? 'bg-[#2FBF71]/10 text-[#2FBF71] ring-1 ring-[#2FBF71]/20 shadow-sm' 
-                          : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100/50 dark:hover:bg-slate-800/50'
-                        }
-                      `}
-                    >
-                      {tab.label}
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
           </div>
 
-          <div className={isInbox ? "flex-1 h-screen overflow-hidden bg-white dark:bg-slate-950" : "flex-1 p-4 md:p-6 overflow-auto"}>
+          {/* Main Content Area */}
+          <main className="flex-1 relative min-h-0">
             {children}
-          </div>
+          </main>
         </SidebarInset>
       </div>
     </SidebarProvider>

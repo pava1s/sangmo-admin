@@ -113,6 +113,9 @@ const RATES = {
   service: 0.20
 };
 
+import { DashboardEmptyState } from '@/components/dashboard/EmptyState';
+import { ShieldAlert, AlertCircle } from 'lucide-react';
+
 export default function LogsPage() {
   const { toast } = useToast();
   const [logs, setLogs] = React.useState<LogEntry[]>([]);
@@ -134,27 +137,26 @@ export default function LogsPage() {
 
   const loadPageData = React.useCallback(async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const user = await getAuthSession();
       setCurrentUser(user);
 
       if (user?.role === 'super_admin') {
         const data = await api.getLogs();
-        setLogs(Array.isArray(data) ? data : []);
-
-        // Fetch Stats
-        // const statsRes = await authFetch('/api/stats/usage');
-        // if (statsRes.ok) {
-        //   const stats = await statsRes.json();
-        //   setApiStats(stats);
-        // }
+        if (!Array.isArray(data)) {
+           throw new Error("Log retention service returned an invalid format.");
+        }
+        setLogs(data);
       }
     } catch (err: any) {
-      setError(err.message);
+      console.error("Auditing Error (Logs):", err);
+      setError(err.message || "The logging service is temporarily unavailable.");
+      toast({ variant: 'destructive', title: 'Audit Error', description: err.message });
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   React.useEffect(() => {
     loadPageData();

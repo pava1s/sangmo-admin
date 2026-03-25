@@ -10,8 +10,9 @@ import {
   Clock,
   XCircle,
   PlusCircle,
-  Loader,
-  RefreshCw, // Added for Sync UI
+  RefreshCw,
+  X,
+  AlertCircle
 } from 'lucide-react';
 import { DashboardEmptyState } from '@/components/dashboard/EmptyState';
 
@@ -111,21 +112,24 @@ export default function TemplatesPage() {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSyncing, setIsSyncing] = React.useState(false); // Added for Sync State
+  const [error, setError] = React.useState<any>(null);
   const [selectedTemplate, setSelectedTemplate] = React.useState<Template | null>(null);
   const { toast } = useToast(); // Added for notifications
 
   // Function defined separately so it can be called after sync
   async function fetchTemplates() {
     setIsLoading(true);
+    setError(null);
     try {
-      const response = await fetch('/api/templates');
-      if (!response.ok) {
-        throw new Error('Failed to fetch templates');
-      }
+      const response = await fetch('/api/v1/whatsapp/templates');
       const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch templates');
+      }
       setTemplates(data);
-    } catch (error) {
-      console.error(error);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || String(err));
     } finally {
       setIsLoading(false);
     }
@@ -134,10 +138,11 @@ export default function TemplatesPage() {
   // ✅ NEW: Sync Function logic
   const handleSyncWithMeta = async () => {
     setIsSyncing(true);
+    setError(null);
     try {
-      const res = await fetch('/api/templates/sync', { method: 'POST' });
-      if (!res.ok) throw new Error('Sync failed');
+      const res = await fetch('/api/v1/whatsapp/templates/sync', { method: 'POST' });
       const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Sync failed');
 
       toast({
         title: "Sync Successful",
@@ -145,11 +150,12 @@ export default function TemplatesPage() {
       });
 
       await fetchTemplates(); // Refresh the list automatically
-    } catch (error: any) {
+    } catch (err: any) {
+      setError(err.message || String(err));
       toast({
         variant: "destructive",
         title: "Sync Error",
-        description: error.message || "Could not connect to Meta API.",
+        description: err.message || "Could not connect to Meta API.",
       });
     } finally {
       setIsSyncing(false);
@@ -171,7 +177,30 @@ export default function TemplatesPage() {
 
   return (
     <TooltipProvider>
-      <main className="flex flex-1 flex-col gap-6 p-6 md:gap-8 md:p-10 overflow-y-auto">
+      <main className="flex flex-1 flex-col gap-6 p-6 md:gap-8 md:p-10 overflow-y-auto relative">
+        {/* NUCLEAR DIAGNOSTIC ERROR OVERLAY */}
+        {error && (
+          <div className="bg-red-600 text-white p-6 border-b-4 border-red-900 z-[100] shadow-2xl shrink-0 -mt-6 -mx-6 mb-6 md:-mt-10 md:-mx-10 md:mb-10">
+            <div className="flex items-start justify-between">
+              <div className="space-y-2">
+                <h2 className="text-xl font-black uppercase tracking-tighter flex items-center gap-2">
+                  <AlertCircle className="h-6 w-6" />
+                  CRITICAL META INTEGRATION ERROR
+                </h2>
+                <p className="font-mono text-sm bg-red-900/30 p-3 rounded border border-red-400/50">
+                  {error}
+                </p>
+              </div>
+              <button 
+                onClick={() => setError(null)}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Message Templates</h1>

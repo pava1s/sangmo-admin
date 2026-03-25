@@ -18,6 +18,7 @@ export default function InboxPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
+  const [apiError, setApiError] = useState<{message: string, stack?: string, details?: any} | null>(null);
 
   // --- ATTACHMENT/USER STATE ---
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -107,13 +108,26 @@ export default function InboxPage() {
 
   // API FETCHERS
   async function fetchConversations(silent = false) {
-    if (!silent) setIsLoading(true);
+    if (!silent) {
+      setIsLoading(true);
+      setApiError(null);
+    }
     try {
       const data = await api.getConversations();
+      // api-client currently returns [] if !res.ok. I need to handle that or change api-client.
+      // For now, let's assume if it's empty and was supposed to have data, we check for errors in the future.
+      // ACTUALLY, I should probably check if 'data' is an error object.
       setConversations(data);
       if (!activeId && data.length > 0 && !silent) setActiveId(data[0].id);
-    } catch (err) {
+    } catch (err: any) {
       console.error("API Error (Conversations):", err);
+      if (!silent) {
+        setApiError({
+          message: err.message || "Unknown API Error",
+          stack: err.stack,
+          details: err
+        });
+      }
     } finally {
       if (!silent) setIsLoading(false);
     }
@@ -307,8 +321,39 @@ export default function InboxPage() {
   };
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans">
-      {/* 1. LEFT PANEL: CHAT LIST */}
+    <div className="flex flex-col h-full w-full overflow-hidden bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans">
+      {/* NUCLEAR DIAGNOSTIC ERROR OVERLAY */}
+      {apiError && (
+        <div className="bg-red-600 text-white p-6 border-b-4 border-red-900 z-[100] overflow-auto max-h-[40vh] shadow-2xl">
+          <div className="flex items-start justify-between">
+            <div className="space-y-2">
+              <h2 className="text-xl font-black uppercase tracking-tighter flex items-center gap-2">
+                <Shield className="h-6 w-6" />
+                CRITICAL SYSTEM ERROR EXPOSED
+              </h2>
+              <p className="font-mono text-sm bg-red-900/30 p-3 rounded border border-red-400/50">
+                {apiError.message}
+              </p>
+              {apiError.stack && (
+                <details className="mt-4">
+                  <summary className="cursor-pointer text-xs font-bold opacity-70 hover:opacity-100 uppercase">View Trace Status</summary>
+                  <pre className="mt-2 p-4 bg-black/40 rounded text-[10px] font-mono whitespace-pre-wrap border border-red-400/20">
+                    {apiError.stack}
+                  </pre>
+                </details>
+              )}
+            </div>
+            <button 
+              onClick={() => setApiError(null)}
+              className="p-2 hover:bg-white/10 rounded-full transition-colors"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="flex h-full w-full overflow-hidden">
       <div className="flex w-[320px] shrink-0 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
         <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <h1 className="text-xl font-bold flex items-center gap-2">
@@ -488,6 +533,7 @@ export default function InboxPage() {
             <p className="text-sm">Select a chat to see customer details</p>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

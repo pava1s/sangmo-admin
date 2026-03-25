@@ -22,7 +22,12 @@ export async function GET(req: NextRequest) {
         return NextResponse.json(items);
     } catch (error: any) {
         console.error('[API] Get Customers Error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ 
+            error: error.message || String(error),
+            stack: error.stack,
+            code: error.code,
+            details: error
+        }, { status: 500 });
     }
 }
 
@@ -51,6 +56,11 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: true, customer: item });
     } catch (error: any) {
         console.error('[API] Create Customer Error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ 
+            error: error.message || String(error),
+            stack: error.stack,
+            code: error.code,
+            details: error
+        }, { status: 500 });
     }
 }

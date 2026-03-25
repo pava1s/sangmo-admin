@@ -39,8 +39,13 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json({ conversations: mappedItems });
     } catch (error: any) {
-        console.error('DYNAMODB FETCH ERROR:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        console.error('DYNAMODB FETCH ERROR (Conversations):', error);
+        return NextResponse.json({ 
+            error: error.message || String(error),
+            stack: error.stack,
+            code: error.code,
+            details: error
+        }, { status: 500 });
     }
 }
 

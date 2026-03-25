@@ -60,6 +60,12 @@ export async function GET() {
         });
 
     } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        console.error('DYNAMODB FETCH ERROR (Analytics):', error);
+        return NextResponse.json({ 
+            error: error.message || String(error),
+            stack: error.stack,
+            code: error.code,
+            details: error
+        }, { status: 500 });
     }
 }

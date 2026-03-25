@@ -27,7 +27,8 @@ import {
   X,
   BarChart,
   Lock,
-  Users
+  Users,
+  AlertCircle
 } from 'lucide-react';
 import { DashboardEmptyState } from '@/components/dashboard/EmptyState';
 import * as React from 'react';
@@ -430,6 +431,7 @@ export default function CampaignsPage() {
   const [isCreateOpen, setCreateOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const [confirmationState, setConfirmationState] = React.useState<ConfirmationState>({ action: null, campaign: null });
+  const [error, setError] = React.useState<any>(null);
   const { toast } = useToast();
   const [currentUser, setCurrentUser] = React.useState<UserSession | null>(null);
 
@@ -444,9 +446,13 @@ export default function CampaignsPage() {
   const fetchCampaigns = React.useCallback(async () => {
     try {
       const data = await api.getCampaigns();
-      setCampaigns(data);
-    } catch (error: any) {
-      console.error("Fetch Error:", error.message);
+      if (data && (data as any).error) {
+        throw new Error((data as any).error);
+      }
+      setCampaigns(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      console.error("Fetch Error (Campaigns):", err);
+      setError(err.message || String(err));
     } finally {
       setIsLoading(false);
     }
@@ -509,7 +515,30 @@ export default function CampaignsPage() {
 
   return (
     <TooltipProvider>
-      <main className="flex flex-1 flex-col gap-6 p-6 md:gap-8 md:p-10 overflow-y-auto">
+      <main className="flex flex-1 flex-col gap-6 p-6 md:gap-8 md:p-10 overflow-y-auto relative">
+        {/* NUCLEAR DIAGNOSTIC ERROR OVERLAY */}
+        {error && (
+          <div className="bg-red-600 text-white p-6 border-b-4 border-red-900 z-[100] shadow-2xl shrink-0 -mt-6 -mx-6 mb-6 md:-mt-10 md:-mx-10 md:mb-10">
+            <div className="flex items-start justify-between">
+              <div className="space-y-2">
+                <h2 className="text-xl font-black uppercase tracking-tighter flex items-center gap-2">
+                  <AlertCircle className="h-6 w-6" />
+                  CRITICAL CAMPAIGN ENGINE ERROR
+                </h2>
+                <p className="font-mono text-sm bg-red-900/30 p-3 rounded border border-red-400/50">
+                  {error}
+                </p>
+              </div>
+              <button 
+                onClick={() => setError(null)}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Campaigns</h1>

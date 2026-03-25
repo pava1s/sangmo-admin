@@ -38,7 +38,6 @@ import { Switch } from '@/components/ui/switch';
 import { 
   Code, 
   Copy, 
-  Key, 
   Plus, 
   RotateCcw, 
   Trash2, 
@@ -66,10 +65,14 @@ interface UsageStats {
   totalCount: number;
 }
 
+import { DashboardEmptyState } from '@/components/dashboard/EmptyState';
+import { Key, AlertCircle } from 'lucide-react';
+
 export default function DevelopersPage() {
   const [keys, setKeys] = React.useState<any[]>([]);
   const [usage, setUsage] = React.useState<UsageStats | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
   const [isCreating, setIsCreating] = React.useState(false);
   const [newKeyLabel, setNewKeyLabel] = React.useState('');
   const [newBusinessName, setNewBusinessName] = React.useState('');
@@ -80,12 +83,18 @@ export default function DevelopersPage() {
 
   const fetchData = async () => {
     setLoading(true);
+    setError(null);
     try {
       const [keysRes, usageRes, billingRes] = await Promise.all([
         fetch('/api/admin/api-keys'),
         fetch('/api/admin/api-usage?days=30'),
         fetch('/api/admin/billing')
       ]);
+
+      if (!keysRes.ok || !usageRes.ok || !billingRes.ok) {
+        throw new Error("One or more developer APIs failed to respond.");
+      }
+
       const keysData = await keysRes.json();
       const usageData = await usageRes.json();
       const billingData = await billingRes.json();
@@ -93,8 +102,9 @@ export default function DevelopersPage() {
       setKeys(Array.isArray(keysData) ? keysData : []);
       setUsage(usageData);
       setBillingRecords(Array.isArray(billingData) ? billingData : []);
-    } catch (err) {
-      console.error('Fetch failed', err);
+    } catch (err: any) {
+      console.error('Developer Insights Fetch failed:', err);
+      setError(err.message || "Failed to sync developer metrics.");
     } finally {
       setLoading(false);
     }
@@ -199,6 +209,20 @@ export default function DevelopersPage() {
     return (
       <div className="flex h-full items-center justify-center p-10">
         <Loader2 className="animate-spin h-8 w-8 text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 p-8">
+        <DashboardEmptyState
+          icon={AlertCircle}
+          title="Developer Service Unavailable"
+          description={error}
+          actionLabel="Retry Connection"
+          onAction={fetchData}
+        />
       </div>
     );
   }

@@ -61,10 +61,14 @@ const DEFAULT_COLUMNS: ColumnConfig[] = [
   { id: 'actions', label: '', width: 50 },
 ];
 
+import { DashboardEmptyState } from '@/components/dashboard/EmptyState';
+import { Users, AlertCircle } from 'lucide-react';
+
 export default function ContactsPage() {
   const [data, setData] = React.useState<Customer[]>([]);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
   const [isAddOpen, setIsAddOpen] = React.useState(false);
   const [newContact, setNewContact] = React.useState<any>({ tags: '' });
   const [isSaving, setIsSaving] = React.useState(false);
@@ -72,11 +76,15 @@ export default function ContactsPage() {
 
   const fetchContacts = React.useCallback(async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const json = await api.getCustomers(searchTerm);
-      setData(json);
+      setData(Array.isArray(json) ? json : []);
     } catch (e: any) {
+      console.error("Fetch Error (Contacts):", e);
+      setError(e.message || "Failed to load contacts");
       toast({ variant: 'destructive', title: 'Error', description: e.message });
+      setData([]);
     } finally {
       setIsLoading(false);
     }
@@ -118,7 +126,30 @@ export default function ContactsPage() {
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-white dark:bg-slate-950 text-sm font-sans">
+    <div className="flex flex-col h-full w-full bg-white dark:bg-slate-950 text-sm font-sans overflow-hidden">
+      {/* NUCLEAR DIAGNOSTIC ERROR OVERLAY */}
+      {error && (
+        <div className="bg-red-600 text-white p-6 border-b-4 border-red-900 z-[100] overflow-auto max-h-[40vh] shadow-2xl shrink-0">
+          <div className="flex items-start justify-between">
+            <div className="space-y-2">
+              <h2 className="text-xl font-black uppercase tracking-tighter flex items-center gap-2">
+                <AlertCircle className="h-6 w-6" />
+                CRITICAL CRM DATA ERROR
+              </h2>
+              <p className="font-mono text-sm bg-red-900/30 p-3 rounded border border-red-400/50">
+                {error}
+              </p>
+            </div>
+            <button 
+              onClick={() => setError(null)}
+              className="p-2 hover:bg-white/10 rounded-full transition-colors"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="flex-none h-14 border-b flex items-center justify-between px-4 bg-white dark:bg-slate-950 z-20">
         <div className="flex items-center gap-4">
           <h1 className="font-bold text-lg">All Contacts</h1>
@@ -140,22 +171,43 @@ export default function ContactsPage() {
       </div>
 
       <div className="flex-1 overflow-auto p-4">
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-slate-50 dark:bg-slate-900 sticky top-0">
-            <tr>
-              {DEFAULT_COLUMNS.map(c => (
-                <th key={c.id} className="py-2 px-3 text-xs font-semibold text-slate-500 uppercase border-b" style={{ width: c.width }}>{c.label}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {isLoading ? (
-              <tr><td colSpan={7} className="p-8 text-center">Loading...</td></tr>
-            ) : data.length === 0 ? (
-              <tr><td colSpan={7} className="p-8 text-center text-slate-400">No contacts found.</td></tr>
-            ) : (
-              data.map(contact => (
-                <tr key={contact.id} className="hover:bg-slate-50 dark:hover:bg-slate-900">
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center h-64 space-y-4">
+            <Loader2 className="h-8 w-8 animate-spin text-slate-300" />
+            <p className="text-slate-400 font-medium">Loading your contacts...</p>
+          </div>
+        ) : error ? (
+          <div className="py-12">
+            <DashboardEmptyState
+              icon={AlertCircle}
+              title="Failed to load contacts"
+              description={error}
+              actionLabel="Retry"
+              onAction={fetchContacts}
+            />
+          </div>
+        ) : data.length === 0 ? (
+          <div className="py-12">
+            <DashboardEmptyState
+              icon={Users}
+              title="No contacts found"
+              description={searchTerm ? `No matches for "${searchTerm}"` : "Start building your customer base by adding your first contact."}
+              actionLabel="Add Contact"
+              onAction={() => setIsAddOpen(true)}
+            />
+          </div>
+        ) : (
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-slate-50 dark:bg-slate-900 sticky top-0">
+              <tr>
+                {DEFAULT_COLUMNS.map(c => (
+                  <th key={c.id} className="py-2 px-3 text-xs font-semibold text-slate-500 uppercase border-b" style={{ width: c.width }}>{c.label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {data.map(contact => (
+                <tr key={contact.id} className="hover:bg-slate-50 dark:hover:bg-slate-900 group">
                   <td className="px-3 py-2 font-medium">{contact.full_name}</td>
                   <td className="px-3 py-2 font-mono text-xs">{contact.source_id}</td>
                   <td className="px-3 py-2">{contact.email || '-'}</td>
@@ -177,10 +229,10 @@ export default function ContactsPage() {
                     </DropdownMenu>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
       <Sheet open={isAddOpen} onOpenChange={setIsAddOpen}>
