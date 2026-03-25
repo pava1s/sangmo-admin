@@ -121,6 +121,8 @@ const whatsappSubItems = [
   { href: '/dashboard/whatsapp/templates', label: 'Templates', icon: ScrollText },
   { href: '/dashboard/whatsapp/contacts', label: 'Contacts', icon: Users },
   { href: '/dashboard/whatsapp/analytics', label: 'Analytics', icon: BarChart },
+  { href: '/dashboard/whatsapp/developers', label: 'Developers', icon: Code },
+  { href: '/dashboard/whatsapp/logs', label: 'Logs', icon: History },
 ];
 
 type User = {
@@ -319,9 +321,10 @@ export default function DashboardLayout({
 
         {/* MAIN CONTENT */}
         <SidebarInset className="flex text-clip overflow-hidden">
-          {/* Header (Hidden on Inbox) */}
-          {!isInbox && (
-            <div className="flex flex-col w-full sticky top-0 z-20">
+          {/* Header & Sub-Navigation Container */}
+          <div className="flex flex-col w-full sticky top-0 z-20">
+            {/* Main Header (Hidden on Inbox for immersive view) */}
+            {!isInbox && (
               <header className="flex h-16 shrink-0 items-center justify-between border-b border-sidebar-border/50 bg-white/80 dark:bg-slate-950/80 px-4 backdrop-blur-xl shadow-sm supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-950/60 transition-all">
                 <div className="flex items-center gap-4 px-4 font-geist">
                   <Breadcrumb>
@@ -382,31 +385,31 @@ export default function DashboardLayout({
                     </div>
                 </div>
               </header>
+            )}
 
-              {/* Glassmorphism Sub-Header for WhatsApp */}
-              {pathname?.includes('/whatsapp') && (
-                <div className="flex h-12 items-center px-8 bg-white/40 dark:bg-slate-950/40 backdrop-blur-md border-b border-white/20 dark:border-white/5 overflow-x-auto no-scrollbar gap-2">
-                  {whatsappSubItems.map((item) => {
-                    const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
-                    return (
-                      <Link 
-                        key={item.href} 
-                        href={item.href}
-                        className={`flex items-center gap-2 px-4 h-8 rounded-full transition-all text-xs font-medium whitespace-nowrap ${
-                          isActive 
-                            ? 'bg-[#2FBF71] text-white shadow-[0_4px_12px_rgba(47,191,113,0.3)] scale-105' 
-                            : 'text-slate-600 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-white/5 hover:text-[#2FBF71]'
-                        }`}
-                      >
-                        <item.icon className={`w-3.5 h-3.5 ${isActive ? 'animate-pulse' : ''}`} />
-                        {item.label}
-                      </Link>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          )}
+            {/* Glassmorphism Sub-Header for WhatsApp (Visible on all WhatsApp routes) */}
+            {pathname?.includes('/whatsapp') && (
+              <div className="flex h-12 items-center px-8 bg-white/40 dark:bg-slate-950/40 backdrop-blur-md border-b border-white/20 dark:border-white/5 overflow-x-auto no-scrollbar gap-2 shadow-sm">
+                {whatsappSubItems.map((item) => {
+                  const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
+                  return (
+                    <Link 
+                      key={item.href} 
+                      href={item.href}
+                      className={`flex items-center gap-2 px-4 h-8 rounded-full transition-all text-xs font-medium whitespace-nowrap ${
+                        isActive 
+                          ? 'bg-[#2FBF71] text-white shadow-[0_4px_12px_rgba(47,191,113,0.3)] scale-105' 
+                          : 'text-slate-600 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-white/5 hover:text-[#2FBF71]'
+                      }`}
+                    >
+                      <item.icon className={`w-3.5 h-3.5 ${isActive ? 'animate-pulse' : ''}`} />
+                      {item.label}
+                    </Link>
+                  )
+                })}
+              </div>
+            )}
+          </div>
 
           <div className={isInbox ? "flex-1 h-screen overflow-hidden bg-white dark:bg-slate-950" : "flex-1 p-4 md:p-6 overflow-auto"}>
             {children}
