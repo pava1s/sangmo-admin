@@ -7,10 +7,12 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
     try {
+        /* 
         const session = await getAuthSession();
         if (!session) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+        */
 
         const WHATSAPP_ACCESS_TOKEN = serverEnv.META_TOKEN;
         const WHATSAPP_BUSINESS_ID = serverEnv.META_BIZ_ID;
