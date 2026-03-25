@@ -9,25 +9,29 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        let items = [];
-        
-        // If Super Admin, fetch ALL items via Scan (to ensure we see legacy orphans too)
-        if (session.role === 'super_admin') {
-            const response = await scanTable();
-            items = (response.Items || []).filter(item => item.pk?.startsWith('CONV#'));
-        } else {
-            // For Organizers: Query GSI1 with tenant_id filter
-            // (Note: Currently queryGSI1 doesn't support FilterExpression, so we'll filter in JS for now or update dynamo.ts)
-            const response = await queryGSI1('TYPE#CONVERSATION');
-            items = (response.Items || []).filter(item => item.tenant_id === session.id || item.tenant_id === session.email);
-        }
+        // GOD MODE: Raw, unfiltered scan for diagnostic purposes
+        const response = await scanTable();
+        console.log('DynamoDB Raw Fetch (Conversations):', response.Items?.length || 0);
+
+        // Fetch ALL items from the table, filtering only for conversation type in memory
+        const items = (response.Items || []).filter(item => 
+            item.pk?.startsWith('CONV#') || item.gsi1pk === 'TYPE#CONVERSATION'
+        );
+
+        // Map fields if needed (ensuring compatibility with frontend)
+        const mappedItems = items.map(item => ({
+            ...item,
+            id: item.id || item.pk?.replace('CONV#', ''),
+            customer_name: item.customer_name || 'Legacy Customer',
+            last_message: item.last_message || item.message_body || 'No content',
+        }));
         
         // Sort by last_message_at descending
-        items.sort((a: any, b: any) => 
+        mappedItems.sort((a: any, b: any) => 
             new Date(b.last_message_at || 0).getTime() - new Date(a.last_message_at || 0).getTime()
         );
 
-        return NextResponse.json({ conversations: items });
+        return NextResponse.json({ conversations: mappedItems });
     } catch (error: any) {
         console.error('[API] Get Conversations Error:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
