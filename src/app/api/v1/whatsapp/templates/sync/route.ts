@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { putItem } from '@/lib/aws/dynamo';
 import { getAuthSession } from '@/lib/auth';
-
 import { serverEnv } from '@/lib/server-env';
 
 export const dynamic = 'force-dynamic';
@@ -16,43 +15,26 @@ export async function POST(req: NextRequest) {
         const WHATSAPP_ACCESS_TOKEN = serverEnv.META_TOKEN;
         const WHATSAPP_BUSINESS_ID = serverEnv.META_BIZ_ID;
 
-        console.log("META TOKEN LENGTH (Sync):", WHATSAPP_ACCESS_TOKEN?.length || 0);
-
         if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_BUSINESS_ID) {
-            throw new Error('Meta API environment variables (WHATSAPP_ACCESS_TOKEN or WHATSAPP_BUSINESS_ID) are missing.');
+            throw new Error('Meta API credentials missing in serverEnv');
         }
 
-        const apiUrl = `https://graph.facebook.com/v21.0/${WHATSAPP_BUSINESS_ID}/message_templates`;
+        const apiUrl = `https://graph.facebook.com/v21.0/${WHATSAPP_BUSINESS_ID}/message_templates?limit=1000`;
         
-        // BRUTE FORCE DEBUG: Log everything
-        const maskedToken = WHATSAPP_ACCESS_TOKEN ? `***${WHATSAPP_ACCESS_TOKEN.slice(-4)}` : 'NULL';
-        console.log('BRUTE FORCE FETCH:', {
-            url: apiUrl,
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${maskedToken}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
+        console.log('MIRROR SYNC START:', apiUrl);
         const response = await fetch(apiUrl, {
             headers: {
                 'Authorization': `Bearer ${WHATSAPP_ACCESS_TOKEN}`
             }
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            const errorData = await response.json();
-            console.error('META DEBUG ERROR:', JSON.stringify(errorData, null, 2));
-            return NextResponse.json({ 
-                error: 'Meta API Unauthorized',
-                debug: errorData, 
-                url: apiUrl,
-                token_len: WHATSAPP_ACCESS_TOKEN?.length || 0
-            }, { status: 401 });
+            console.error('MIRROR SYNC ERROR:', JSON.stringify(data, null, 2));
+            return NextResponse.json({ error: 'Meta Sync Failed', debug: data }, { status: response.status });
         }
 
-        const data = await response.json();
         const templates = data.data || [];
         let count = 0;
 
@@ -81,12 +63,10 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({ success: true, count, timestamp: new Date().toISOString() });
     } catch (error: any) {
-        console.error('META SYNC ERROR:', error);
+        console.error('CRITICAL SYNC FAILURE:', error);
         return NextResponse.json({ 
             error: error.message || String(error),
-            stack: error.stack,
-            code: error.code,
-            details: error
+            stack: error.stack
         }, { status: 500 });
     }
 }

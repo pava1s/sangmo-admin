@@ -48,15 +48,15 @@ export const apiClient = {
     return res.json();
   },
 
-  // Customers (CRM)
+  // Customers (CRM shifted to /contacts)
   async getCustomers(search: string = ''): Promise<Customer[]> {
-    const res = await fetch(`${API_BASE}/customers?search=${encodeURIComponent(search)}`);
+    const res = await fetch(`${API_BASE}/contacts?search=${encodeURIComponent(search)}`);
     if (!res.ok) return [];
     return res.json();
   },
 
   async createCustomer(data: Partial<Customer>): Promise<Customer> {
-    const res = await fetch(`${API_BASE}/customers`, {
+    const res = await fetch(`${API_BASE}/contacts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -66,17 +66,17 @@ export const apiClient = {
   },
 
   async updateCustomer(id: string, data: Partial<Customer>): Promise<Customer> {
-    const res = await fetch(`${API_BASE}/customers/${id}`, {
+    const res = await fetch(`${API_BASE}/contacts/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error('Failed to update customer');
+    if (!res.ok) throw new Error('Failed to update contact');
     return res.json();
   },
 
   async getCustomerById(id: string): Promise<Customer | null> {
-    const res = await fetch(`${API_BASE}/customers/${id}`);
+    const res = await fetch(`${API_BASE}/contacts/${id}`);
     if (!res.ok) return null;
     const data = await res.json();
     return data.customer || data;
