@@ -545,7 +545,7 @@ export default function DevelopersPage() {
                   <h3 className="text-sm font-semibold">Endpoint URL</h3>
                   <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-md border font-mono text-xs">
                     <span className="text-green-600 font-bold uppercase">POST</span>
-                    <span className="select-all">https://wanderlynxlabs.com/api/v1/messages/send</span>
+                    <span className="select-all">https://admin.sangmo.in/api/v1/messages/send</span>
                   </div>
                 </div>
 
@@ -560,7 +560,7 @@ export default function DevelopersPage() {
                 <div className="space-y-2">
                   <h3 className="text-sm font-semibold">Example Request (cURL)</h3>
                   <pre className="p-4 bg-slate-950 text-slate-100 rounded-md overflow-x-auto text-[10px] leading-relaxed">
-{`curl -X POST https://wanderlynxlabs.com/api/v1/messages/send \\
+{`curl -X POST https://admin.sangmo.in/api/v1/messages/send \\
   -H "Content-Type: application/json" \\
   -H "x-api-key: YOUR_API_KEY" \\
   -d '{
