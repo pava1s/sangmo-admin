@@ -73,14 +73,19 @@ type MenuItem = {
 };
 
 const menuItems: MenuItem[] = [
-  { href: '/dashboard', label: 'Service Hub', icon: LayoutDashboard, roles: ['super_admin', 'organizer'] },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['super_admin', 'organizer'] },
+  { href: '/dashboard/whatsapp/inbox', label: 'Inbox', icon: MessageSquare, roles: ['super_admin', 'organizer'] },
+  { href: '/dashboard/whatsapp/contacts', label: 'Contacts', icon: Users, roles: ['super_admin', 'organizer'] },
+  { href: '/dashboard/whatsapp/campaigns', label: 'Campaigns', icon: Send, roles: ['super_admin', 'organizer'] },
+  { href: '/dashboard/whatsapp/automations', label: 'Automations', icon: Bot, roles: ['super_admin', 'organizer'] },
+  { href: '/dashboard/whatsapp/analytics', label: 'Analytics', icon: BarChart, roles: ['super_admin', 'organizer'] },
+  { href: '/dashboard/whatsapp/billing', label: 'Billing', icon: DollarSign, roles: ['super_admin', 'organizer'] },
 ];
 
 const adminMenuItems: MenuItem[] = [
   { href: '/dashboard/whatsapp/developers', label: 'Developers', icon: Code, roles: ['super_admin'] },
   { href: '/dashboard/whatsapp/logs', label: 'Logs', icon: History, roles: ['super_admin'] },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings, roles: ['super_admin'] },
-  { href: '/dashboard/setup', label: 'Setup', icon: UserPlus, roles: ['organizer'] },
 ];
 
 const workspaceModules = [

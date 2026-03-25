@@ -3,135 +3,169 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle, 
-  CardDescription 
-} from '@/components/ui/card';
-import { 
+  Users, 
   MessageSquare, 
-  Mail, 
-  Calendar, 
-  Briefcase,
-  ExternalLink,
-  Lock,
-  ArrowRight
+  Send, 
+  ScrollText,
+  Rocket,
+  ArrowRight,
+  TrendingUp,
+  History,
+  CheckCircle2,
+  Clock,
+  ShieldCheck,
+  LayoutDashboard
 } from 'lucide-react';
-import { getSession, isSuperAdmin } from '@/lib/auth';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 export default function DashboardPage() {
-  const session = getSession();
-  const isAdmin = isSuperAdmin(session);
+  const [stats, setStats] = React.useState({
+    contacts: 5,
+    messages: 302,
+    campaigns: 0,
+    templates: 9
+  });
+  const [feed, setFeed] = React.useState<any[]>([]);
 
-  const modules = [
-    {
-      id: 'whatsapp',
-      title: 'WhatsApp CRM',
-      description: 'Customer messaging, inbox, and campaign automation.',
-      icon: MessageSquare,
-      href: '/dashboard/whatsapp/inbox',
-      restricted: !isAdmin,
-      color: 'text-green-600',
-      bg: 'bg-green-500/10'
+  React.useEffect(() => {
+    // Simulated fetch of recent activity
+    setFeed([
+      { id: '1', type: 'send_message', to: '8073786033', status: 'success', time: '21:33:12' },
+      { id: '2', type: 'send_message', to: '8050572359', status: 'success', time: '21:33:05' },
+      { id: '3', type: 'template_sync', name: 'booking_confirmation', status: 'success', time: '19:45:00' },
+    ]);
+  }, []);
+
+  const statCards = [
+    { title: 'Total Contacts', value: stats.contacts, sub: 'Total contacts in CRM', icon: Users },
+    { title: 'Messages Processed', value: stats.messages, sub: 'Sent & Received', icon: MessageSquare },
+    { title: 'Active Campaigns', value: stats.campaigns, sub: 'Currently running', icon: Send },
+    { title: 'Templates', value: stats.templates, sub: 'Synced from Meta', icon: ScrollText },
+  ];
+
+  const steps = [
+    { 
+      id: 1, 
+      title: 'Import Contacts', 
+      desc: 'Upload your customer list via CSV to start building your audience.',
+      link: '/dashboard/whatsapp/contacts',
+      linkText: 'Go to Contacts'
     },
-    {
-      id: 'email',
-      title: 'Email Center',
-      description: 'Itineraries, confirmations, and traveler updates.',
-      icon: Mail,
-      href: '/dashboard/email',
-      restricted: !isAdmin,
-      color: 'text-blue-600',
-      bg: 'bg-blue-500/10'
+    { 
+      id: 2, 
+      title: 'Sync Templates', 
+      desc: 'Fetch your approved message templates from WhatsApp Manager.',
+      link: '/dashboard/whatsapp/templates',
+      linkText: 'Go to Templates'
     },
-    {
-      id: 'bookings',
-      title: 'Booking Manager',
-      description: 'Logistics, traveler lists, and trek management.',
-      icon: Calendar,
-      href: '/dashboard/bookings',
-      restricted: false,
-      color: 'text-purple-600',
-      bg: 'bg-purple-500/10'
-    },
-    {
-      id: 'partners',
-      title: 'Partner Portal',
-      description: 'Manage organizers, payouts, and assignments.',
-      icon: Briefcase,
-      href: '/dashboard/partners',
-      restricted: !isAdmin,
-      color: 'text-amber-600',
-      bg: 'bg-amber-500/10'
+    { 
+      id: 3, 
+      title: 'Send Campaign', 
+      desc: 'Create your first broadcast campaign to engage your users.',
+      link: '/dashboard/whatsapp/campaigns',
+      linkText: 'Draft Campaign'
     }
   ];
 
   return (
-    <div className="flex flex-col gap-8 p-4 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-slate-900 to-slate-500 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
-          Service Hub
-        </h1>
-        <p className="text-muted-foreground text-lg">
-          {isAdmin ? 'Master Administrator Workspace — Overseeing all operations.' : 'Organizer Workspace — Manage your assigned treks.'}
-        </p>
+    <div className="flex flex-col gap-8 p-6 md:p-10 bg-slate-50/50 dark:bg-slate-950/50 min-h-screen">
+      {/* Breadcrumb Header */}
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <span>Dashboard</span>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
-        {modules.map((mod) => (
-          <Card 
-            key={mod.id} 
-            className={`group relative overflow-hidden border-slate-200/50 dark:border-slate-800/50 transition-all hover:shadow-2xl hover:scale-[1.01] ${mod.restricted ? 'opacity-60 grayscale cursor-not-allowed shadow-none' : 'hover:border-primary/40'}`}
-          >
-            <div className={`absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity`}>
-               <mod.icon className="h-24 w-24" />
-            </div>
-            
-            <CardHeader className="flex flex-row items-start justify-between pb-4">
-              <div className={`p-3 rounded-2xl ${mod.bg} ${mod.color} shadow-inner`}>
-                <mod.icon className="h-8 w-8" />
-              </div>
-              {!mod.restricted ? (
-                <Link href={mod.href}>
-                  <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                    <ArrowRight className="h-4 w-4 text-primary" />
-                  </div>
-                </Link>
-              ) : (
-                <div className="bg-slate-50 dark:bg-slate-900 p-2 rounded-full text-muted-foreground">
-                  <Lock className="h-4 w-4" />
+      {/* Stat Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {statCards.map((card) => (
+          <Card key={card.title} className="border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden group hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{card.title}</p>
+                  <h3 className="text-3xl font-bold tracking-tight">{card.value}</h3>
                 </div>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <CardTitle className="text-2xl font-bold mb-2">{mod.title}</CardTitle>
-                <CardDescription className="text-base leading-relaxed">
-                  {mod.description}
-                </CardDescription>
+                <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-400 group-hover:text-[#2FBF71] transition-colors">
+                  <card.icon className="h-5 w-5" />
+                </div>
               </div>
-              
-              <div className="pt-4 border-t border-slate-100 dark:border-slate-800/50">
-                {!mod.restricted ? (
-                  <Link 
-                    href={mod.href} 
-                    className="inline-flex items-center text-sm font-semibold text-[#2FBF71] hover:text-[#28a361] transition-colors group/link"
-                  >
-                    Enter Module
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/link:translate-x-1" />
-                  </Link>
-                ) : (
-                  <div className="flex items-center text-xs font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest bg-slate-50 dark:bg-slate-900 w-fit px-3 py-1 rounded-full">
-                     <Lock className="mr-2 h-3 w-3" />
-                     Restricted
-                  </div>
-                )}
-              </div>
+              <p className="text-xs text-slate-400">{card.sub}</p>
             </CardContent>
           </Card>
         ))}
       </div>
+
+      {/* Quick Start Guide */}
+      <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950">
+        <CardContent className="p-8">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg">
+              <Rocket className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <h2 className="text-2xl font-bold tracking-tight">Quick Start Guide</h2>
+          </div>
+          <p className="text-slate-500 mb-8 max-w-2xl">Complete these steps to get your Wanderlynx environment ready for production.</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {steps.map((step) => (
+              <div key={step.id} className="relative p-6 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-[#2FBF71]/30 transition-colors group">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-400">
+                    {step.id}
+                  </span>
+                  <h3 className="font-bold">{step.title}</h3>
+                </div>
+                <p className="text-sm text-slate-500 leading-relaxed mb-6 min-h-[40px]">
+                  {step.desc}
+                </p>
+                <Link 
+                  href={step.link}
+                  className="inline-flex items-center text-sm font-bold text-[#2FBF71] hover:underline gap-1.5"
+                >
+                  {step.linkText}
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Activity Feed */}
+      <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+        <CardContent className="p-8">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                <History className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight">Live Activity Feed</h2>
+                <p className="text-sm text-slate-500">Real time system events and message logs.</p>
+              </div>
+            </div>
+            <Button variant="ghost" size="sm" className="text-[#2FBF71] font-bold">View All</Button>
+          </div>
+
+          <div className="space-y-6">
+            {feed.map((item) => (
+              <div key={item.id} className="flex items-center justify-between group">
+                <div className="flex items-center gap-4">
+                  <div className={`w-2 h-2 rounded-full ${item.status === 'success' ? 'bg-[#2FBF71]' : 'bg-amber-500'} shadow-[0_0_8px_rgba(47,191,113,0.5)]`} />
+                  <div className="space-y-0.5">
+                    <p className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">{item.type}</p>
+                    <p className="text-xs text-slate-500">To: {item.to || item.name}</p>
+                  </div>
+                </div>
+                <span className="text-xs font-mono text-slate-400 group-hover:text-slate-600 transition-colors">
+                  {item.time}
+                </span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
