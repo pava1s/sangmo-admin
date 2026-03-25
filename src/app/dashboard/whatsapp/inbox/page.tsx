@@ -460,21 +460,47 @@ export default function InboxPage() {
                 </div>
               ) : (
                 <AnimatePresence>
-                  {messages.map((m) => (
-                    <motion.div
-                      key={m.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`flex w-full mb-4 ${m.direction === 'outbound' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm ${m.direction === 'outbound' ? 'bg-sky-500 text-white rounded-tr-none' : 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-tl-none border border-slate-100 dark:border-slate-800'}`}>
-                        {m.content}
-                        <div className="text-[10px] opacity-70 mt-1 text-right">
-                          {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                  {messages.map((m) => {
+                    const isTemplate = m.type === 'template' || m.content?.includes('API Template:');
+                    const displayContent = isTemplate ? m.content.replace('API Template:', '').trim() : m.content;
+
+                    return (
+                      <motion.div
+                        key={m.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`flex w-full mb-4 ${m.direction === 'outbound' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        {isTemplate ? (
+                          <div className="max-w-[80%] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+                            <div className="bg-slate-50 dark:bg-slate-800/50 px-4 py-2 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                              <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded flex items-center justify-center">
+                                <FileText className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                              </div>
+                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Template Sent</span>
+                            </div>
+                            <div className="px-4 py-3">
+                              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">{displayContent}</p>
+                              <div className="flex items-center justify-between mt-2">
+                                <span className="text-[10px] text-slate-400">{new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                <div className="flex items-center gap-0.5 text-emerald-500">
+                                  <Check className="h-3 w-3" />
+                                  <Check className="h-3 w-3 -ml-1.5" />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className={`max-w-[75%] px-4 py-2 rounded-2xl text-sm ${m.direction === 'outbound' ? 'bg-sky-500 text-white rounded-tr-none shadow-md shadow-sky-500/20' : 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-tl-none border border-slate-100 dark:border-slate-800 shadow-sm'}`}>
+                            {m.content}
+                            <div className="text-[10px] opacity-70 mt-1 text-right italic font-medium">
+                              {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          </div>
+                        )}
+                      </motion.div>
+                    );
+                  })}
                 </AnimatePresence>
               )}
               <div ref={messagesEndRef} />
