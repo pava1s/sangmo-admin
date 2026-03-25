@@ -7,35 +7,25 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
     try {
-        /* 
-        const session = await getAuthSession();
-        if (!session) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-        */
-
-        const WHATSAPP_ACCESS_TOKEN = serverEnv.META_TOKEN;
-        const WHATSAPP_BUSINESS_ID = serverEnv.META_BIZ_ID;
-
-        if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_BUSINESS_ID) {
-            throw new Error('Meta API credentials missing in serverEnv');
-        }
+        const WHATSAPP_ACCESS_TOKEN = "EAATyOGZBsHbkBQQ3KfYe7IlX5NCrttSDOiiaEj9EfdJL93qSGlh7XeMAvdU3oRGkpQZAgpfkcUdC0UXZBWuiLm6QWveezYbIXtbOWtdT9POy7daz8cL1ClZCkpZCvAKy4oBzcPDNwxG12ufb1NNIPFkzjInUgFGDGYVtYxBc7NoWBQrbCnFqNywbUbZAzpiQZDZD";
+        const WHATSAPP_BUSINESS_ID = serverEnv.META_BIZ_ID || "1525236985361051";
 
         const apiUrl = `https://graph.facebook.com/v21.0/${WHATSAPP_BUSINESS_ID}/message_templates?limit=1000`;
         
-        console.log('MIRROR SYNC START:', apiUrl);
+        console.log('MIRROR SYNC START (HARDCODE):', apiUrl);
         const response = await fetch(apiUrl, {
             headers: {
                 'Authorization': `Bearer ${WHATSAPP_ACCESS_TOKEN}`
             }
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
-            console.error('MIRROR SYNC ERROR:', JSON.stringify(data, null, 2));
-            return NextResponse.json({ error: 'Meta Sync Failed', debug: data }, { status: response.status });
+            const rawError = await response.text();
+            console.error('MIRROR SYNC RAW ERROR:', rawError);
+            return NextResponse.json({ error: rawError }, { status: 400 });
         }
+
+        const data = await response.json();
 
         const templates = data.data || [];
         let count = 0;
