@@ -79,7 +79,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { getSession, UserSession, isSuperAdmin } from '@/lib/auth';
+import { getAuthSession, UserSession, isSuperAdmin } from '@/lib/auth';
 import { apiClient as api } from '@/lib/api-client';
 
 // FIX: Added 'as const' to all variants to solve Badge TypeScript errors
@@ -435,7 +435,7 @@ export default function CampaignsPage() {
 
   React.useEffect(() => {
     async function loadUser() {
-      const session = getSession();
+      const session = await getAuthSession();
       setCurrentUser(session);
     }
     loadUser();

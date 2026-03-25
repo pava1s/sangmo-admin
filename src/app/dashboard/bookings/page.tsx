@@ -27,10 +27,21 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, User, MapPin, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { getSession, isSuperAdmin } from '@/lib/auth';
+import { getAuthSession, isSuperAdmin } from '@/lib/auth';
 
 export default function BookingsPage() {
-  const session = getSession();
+  const [session, setSession] = React.useState<any>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function loadAuth() {
+      const s = await getAuthSession();
+      setSession(s);
+      setIsLoading(false);
+    }
+    loadAuth();
+  }, []);
+
   const isAdmin = isSuperAdmin(session);
 
   const mockBookings = [
@@ -38,6 +49,9 @@ export default function BookingsPage() {
     { id: 'BK-002', traveler: 'Jane Smith', trek: 'Annapurna Circuit', date: '2026-05-10', status: 'Pending', organizer: 'Global Treks' },
     { id: 'BK-003', traveler: 'Mike Ross', trek: 'Island Peak', date: '2026-04-20', status: 'Confirmed', organizer: 'Unassigned' },
   ];
+
+  if (isLoading) return <div className="p-8 text-center text-slate-400">Verifying session...</div>;
+  if (!session) return <div className="p-8 text-center text-red-500">Redirecting to login...</div>;
 
   const organizers = ['Unassigned', 'Global Treks', 'Himalayan Guides', 'Mountain Kings'];
 

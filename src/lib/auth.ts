@@ -46,16 +46,6 @@ export async function getAuthSession(): Promise<UserSession | null> {
   }
 }
 
-// Temporary backward compatibility for components not yet converted to async
-export function getSession(): UserSession {
-  return {
-    id: 'mock-id',
-    name: 'Pavan',
-    email: 'pavansrinivas64@gmail.com',
-    role: 'super_admin'
-  };
-}
-
 export function isSuperAdmin(session: UserSession | null): boolean {
   return session?.role === 'super_admin';
 }

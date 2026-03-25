@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, MoreVertical, Phone, MapPin, Mail, Tag, Pause, 
   CheckCircle2, User, Plus, Send, Image as ImageIcon, 
-  FileText, Check, X, Shield, Clock, Paperclip, File, Download
+  FileText, Check, X, Shield, Clock, Paperclip, File, Download,
+  MessageSquare
 } from 'lucide-react';
 import { apiClient as api } from '@/lib/api-client';
 import { Conversation, Message, Customer } from '@/lib/aws/types';
@@ -330,20 +331,49 @@ export default function InboxPage() {
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {isLoading && <div className="p-4 text-center text-slate-400 text-xs">Loading...</div>}
-          {conversations.map(c => (
-            <div
-              key={c.id}
-              onClick={() => setActiveId(c.id)}
-              className={`px-4 py-3 cursor-pointer border-b border-slate-50 dark:border-slate-900 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors ${activeId === c.id ? 'bg-emerald-50/30 dark:bg-emerald-900/10 border-l-4 border-l-emerald-500' : 'border-l-4 border-l-transparent'}`}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-bold truncate">{c.phone}</span>
-                <span className="text-[10px] text-slate-400">{c.last_message_at ? new Date(c.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
-              </div>
-              <p className="text-xs text-slate-500 truncate">{c.last_message || 'No messages'}</p>
+          {isLoading ? (
+            <div className="space-y-3 p-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex flex-col gap-2 animate-pulse">
+                  <div className="flex justify-between">
+                    <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-1/2" />
+                    <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded w-1/4" />
+                  </div>
+                  <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded w-full" />
+                </div>
+              ))}
             </div>
-          ))}
+          ) : conversations.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center p-6 space-y-4">
+              <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center">
+                <Mail className="w-8 h-8 text-slate-300" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">No conversations yet</p>
+                <p className="text-xs text-slate-400 mt-1">Inbound messages will appear here.</p>
+              </div>
+              <button 
+                onClick={() => fetchConversations()}
+                className="text-xs font-semibold text-emerald-500 hover:text-emerald-600 transition-colors"
+              >
+                Refresh Inbox
+              </button>
+            </div>
+          ) : (
+            conversations.map(c => (
+              <div
+                key={c.id}
+                onClick={() => setActiveId(c.id)}
+                className={`px-4 py-3 cursor-pointer border-b border-slate-50 dark:border-slate-900 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors ${activeId === c.id ? 'bg-emerald-50/30 dark:bg-emerald-900/10 border-l-4 border-l-emerald-500' : 'border-l-4 border-l-transparent'}`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-bold truncate">{c.phone}</span>
+                  <span className="text-[10px] text-slate-400">{c.last_message_at ? new Date(c.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                </div>
+                <p className="text-xs text-slate-500 truncate">{c.last_message || 'No messages'}</p>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -368,23 +398,40 @@ export default function InboxPage() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-[#020617]">
-              <AnimatePresence>
-                {messages.map((m) => (
-                  <motion.div
-                    key={m.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`flex w-full mb-4 ${m.direction === 'outbound' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm ${m.direction === 'outbound' ? 'bg-sky-500 text-white rounded-tr-none' : 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-tl-none border border-slate-100 dark:border-slate-800'}`}>
-                      {m.content}
-                      <div className="text-[10px] opacity-70 mt-1 text-right">
-                        {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </div>
+              {isMessagesLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className={`flex w-full ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`h-12 w-2/3 animate-pulse rounded-2xl ${i % 2 === 0 ? 'bg-sky-100 dark:bg-sky-900/30' : 'bg-white dark:bg-slate-900 border'}`} />
                     </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+                  ))}
+                </div>
+              ) : messages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-40">
+                  <div className="p-4 bg-white dark:bg-slate-900 rounded-full">
+                    <MessageSquare className="w-8 h-8" />
+                  </div>
+                  <p className="text-sm font-medium">No messages in this conversation yet</p>
+                </div>
+              ) : (
+                <AnimatePresence>
+                  {messages.map((m) => (
+                    <motion.div
+                      key={m.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`flex w-full mb-4 ${m.direction === 'outbound' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm ${m.direction === 'outbound' ? 'bg-sky-500 text-white rounded-tr-none' : 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-tl-none border border-slate-100 dark:border-slate-800'}`}>
+                        {m.content}
+                        <div className="text-[10px] opacity-70 mt-1 text-right">
+                          {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              )}
               <div ref={messagesEndRef} />
             </div>
 

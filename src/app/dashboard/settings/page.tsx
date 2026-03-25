@@ -168,8 +168,7 @@ export default function SettingsPage() {
     if (isLoading) return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
     if (!user) return <div>Error loading user profile.</div>;
 
-    const allowedRoles = ['Super Admin', 'Admin', 'Administrator', 'Internal Staff'];
-    if (!allowedRoles.includes(user.role)) {
+    if (user.role !== 'super_admin' && user.role !== 'organizer') {
         return (
             <main className="flex flex-1 flex-col items-center justify-center gap-6 p-6 text-center">
                 <Lock className="h-16 w-16 text-muted-foreground" />

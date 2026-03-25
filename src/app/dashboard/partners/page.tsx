@@ -1,100 +1,75 @@
 'use client';
 
 import * as React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from "@/components/ui/card";
+import { Briefcase, ShieldCheck, Globe, ArrowRight, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { UserPlus, Star, Activity } from 'lucide-react';
 
 export default function PartnerPortalPage() {
-  const partners = [
-    { name: 'Global Treks', type: 'Organizer', tours: 12, rating: 4.8, status: 'Active' },
-    { name: 'Himalayan Guides', type: 'Organizer', tours: 8, rating: 4.5, status: 'Active' },
-    { name: 'Mountain Kings', type: 'Organizer', tours: 3, rating: 4.2, status: 'Pending' },
-  ];
+    return (
+        <div className="flex-1 p-8 bg-[#FDFCFB] dark:bg-slate-950 min-h-screen relative overflow-hidden">
+            {/* Ambient Background Glows */}
+            <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-orange-500/5 blur-[120px] rounded-full" />
+            <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/5 blur-[120px] rounded-full" />
 
-  return (
-    <div className="flex flex-col gap-6 p-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold font-heading">Partner Portal</h1>
-          <p className="text-muted-foreground">Manage and monitor external trek organizers.</p>
-        </div>
-        <Button className="bg-[#2FBF71]"><UserPlus className="mr-2 h-4 w-4" /> Add Partner</Button>
-      </div>
+            <div className="max-w-4xl mx-auto space-y-8 relative z-10">
+                <div className="space-y-2">
+                    <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-3">
+                        <Briefcase className="h-10 w-10 text-orange-600" />
+                        Partner Portal
+                    </h2>
+                    <p className="text-lg text-slate-500 max-w-2xl">
+                        Empower your trip organizers and experience vendors with dedicated management silos.
+                    </p>
+                </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Active Partners</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">14</div>
-            <p className="text-xs text-muted-foreground">+2 from last month</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Monthly Payouts</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">₹ 450,000</div>
-            <p className="text-xs text-muted-foreground">Across all organizers</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Average Performance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">4.6/5</div>
-            <p className="text-xs text-muted-foreground">Partner satisfaction rating</p>
-          </CardContent>
-        </Card>
-      </div>
+                <Card className="border-none shadow-2xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl ring-1 ring-slate-200/50 dark:ring-white/10 overflow-hidden">
+                    <CardContent className="p-0">
+                        <div className="grid md:grid-cols-2">
+                            <div className="p-12 flex flex-col justify-center space-y-6">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-xs font-bold w-fit">
+                                    <ShieldCheck className="h-3 w-3" />
+                                    Multi-Tenant Core
+                                </div>
+                                <h3 className="text-2xl font-bold">Secure Partner Ecosystem</h3>
+                                <p className="text-slate-500 leading-relaxed">
+                                    We are finalizing the sub-account isolation logic. Once live, each partner will have a secure login to manage only their assigned trekkers, chats, and payouts.
+                                </p>
+                                <div className="pt-4">
+                                    <Button className="rounded-full px-6 bg-orange-600 hover:bg-orange-700 text-white hover:scale-105 transition-transform gap-2">
+                                        Configure Access <ArrowRight className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                            <div className="bg-gradient-to-br from-orange-500 to-red-600 p-12 flex items-center justify-center relative">
+                                <Briefcase className="h-32 w-32 text-white/20 absolute -rotate-12" />
+                                <div className="relative z-10 text-center text-white space-y-2">
+                                    <div className="text-5xl font-black italic opacity-20 select-none">ORCHESTRATING</div>
+                                    <div className="text-5xl font-black italic opacity-20 select-none">SUCCESS</div>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Partner Directory</CardTitle>
-          <CardDescription>A list of all registered expedition partners.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Partner Name</TableHead>
-                <TableHead>Total Tours</TableHead>
-                <TableHead>Rating</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {partners.map((partner) => (
-                <TableRow key={partner.name}>
-                  <TableCell className="font-medium">{partner.name}</TableCell>
-                  <TableCell>{partner.tours}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center text-amber-500">
-                      <Star className="h-4 w-4 fill-current mr-1" />
-                      {partner.rating}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="p-6 rounded-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200/50 dark:border-white/5 space-y-3">
+                        <Globe className="h-5 w-5 text-blue-500" />
+                        <h4 className="font-bold">Global Settlements</h4>
+                        <p className="text-xs text-slate-400">Automated currency conversion and global vendor payouts.</p>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={partner.status === 'Active' ? 'default' : 'secondary'}>
-                      {partner.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm">Manage</Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
-  );
+                    <div className="p-6 rounded-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200/50 dark:border-white/5 space-y-3">
+                        <Star className="h-5 w-5 text-yellow-500" />
+                        <h4 className="font-bold">Vendor Analytics</h4>
+                        <p className="text-xs text-slate-400">Track performance metrics of every sub-account.</p>
+                    </div>
+                    <div className="p-6 rounded-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200/50 dark:border-white/5 space-y-3">
+                        <ShieldCheck className="h-5 w-5 text-emerald-500" />
+                        <h4 className="font-bold">Role-Based Access</h4>
+                        <p className="text-xs text-slate-400">Granular permissions for support and finance teams.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 }

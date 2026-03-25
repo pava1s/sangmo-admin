@@ -25,7 +25,7 @@ import {
   ChevronDown,
   LayoutGrid
 } from 'lucide-react';
-import { getSession, isSuperAdmin } from '@/lib/auth';
+import { getAuthSession, isSuperAdmin } from '@/lib/auth';
 
 import {
   SidebarProvider,
@@ -141,16 +141,21 @@ export default function DashboardLayout({
   React.useEffect(() => {
     async function checkAuth() {
       try {
-        const session = getSession();
+        const session = await getAuthSession();
+        if (!session) {
+          router.push('/login');
+          return;
+        }
         setUser({
-          id: session.role === 'super_admin' ? 'admin-1' : 'org-1',
-          name: session.role === 'super_admin' ? 'Sangmo Master' : 'Partner Organizer',
+          id: session.id,
+          name: session.name,
           email: session.email,
           role: session.role,
-          avatar: ''
+          avatar: session.avatar
         });
       } catch (error) {
         console.error("Auth check failed", error);
+        router.push('/login');
       } finally {
         setIsLoading(false);
       }
@@ -239,13 +244,13 @@ export default function DashboardLayout({
                     <SidebarMenuItem key={item.href} className="w-full flex justify-center">
                       <SidebarMenuButton
                         asChild
-                        isActive={pathname === item.href}
+                        isActive={item.href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(item.href)}
                         tooltip={item.label}
                         className="h-10 w-10 justify-center rounded-[12px] p-0 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] text-slate-400 hover:text-slate-800 dark:text-slate-500 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:scale-110 data-[active=true]:bg-[#2FBF71]/10 data-[active=true]:text-[#2FBF71] data-[active=true]:scale-105 relative group ring-0 hover:ring-1 hover:ring-slate-200 dark:hover:ring-slate-700 data-[active=true]:ring-1 data-[active=true]:ring-[#2FBF71]/20"
                       >
                         <Link href={item.href} className="flex h-full w-full items-center justify-center relative">
                           {/* Minimal Left Indicator Dot */}
-                          {pathname === item.href && (
+                          {(item.href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(item.href)) && (
                             <span className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-1 bg-[#2FBF71] rounded-full shadow-[0_0_8px_rgba(47,191,113,0.6)] animate-in fade-in zoom-in duration-300" />
                           )}
                           <item.icon className="h-5 w-5 relative z-10" strokeWidth={2} />
