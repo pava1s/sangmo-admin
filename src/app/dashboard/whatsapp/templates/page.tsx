@@ -48,16 +48,21 @@ type Template = {
   name: string;
   category: string;
   language: string;
-  status: 'Approved' | 'Pending' | 'Rejected';
-  content: string; // The API now processes this from JSON to String
+  status: 'Approved' | 'Pending' | 'Rejected' | 'APPROVED' | 'PENDING' | 'REJECTED';
+  content: string;
+  raw_data?: any;
 };
 
 const statusConfig = {
   Approved: {
     variant: 'default',
     icon: CheckCircle,
-    className:
-      'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+    className: 'bg-green-100 text-green-800 border-green-200 ring-green-500/10',
+  },
+  APPROVED: {
+    variant: 'default',
+    icon: CheckCircle,
+    className: 'bg-green-100 text-green-800 border-green-200 ring-green-500/10',
   },
   Pending: {
     variant: 'secondary',
@@ -96,10 +101,21 @@ function TemplatePreviewDialog({ template, open, onOpenChange }: { template: Tem
               <span>{template.status}</span>
             </Badge>
           </div>
-          <div className="p-4 bg-secondary rounded-2xl">
-            <p className="text-sm text-muted-foreground mb-2">Template Content:</p>
-            <p className="whitespace-pre-wrap text-sm">{template.content}</p>
+          <div className="p-4 bg-secondary/50 rounded-2xl border border-border">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase mb-2 tracking-wider">Template Content</p>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed">{template.content}</p>
           </div>
+
+          {template.raw_data && (
+            <div className="space-y-2">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">JSON Sample (Variables)</p>
+              <div className="p-4 bg-slate-950 rounded-xl overflow-x-auto border border-slate-800">
+                <pre className="text-[11px] font-mono text-emerald-400">
+                  {JSON.stringify(template.raw_data, null, 2)}
+                </pre>
+              </div>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

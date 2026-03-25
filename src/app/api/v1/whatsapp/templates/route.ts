@@ -23,7 +23,8 @@ export async function GET(req: NextRequest) {
             category: item.category || 'MARKETING',
             language: item.language || 'en_US',
             status: item.status || 'Approved',
-            content: item.content || item.body_text || 'No content preview available'
+            content: item.content || item.body_text || 'No content preview available',
+            raw_data: item
         }));
 
         return NextResponse.json(templates);
