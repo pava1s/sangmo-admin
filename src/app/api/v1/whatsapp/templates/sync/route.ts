@@ -24,7 +24,17 @@ export async function POST(req: NextRequest) {
 
         const apiUrl = `https://graph.facebook.com/v21.0/${WHATSAPP_BUSINESS_ID}/message_templates`;
         
-        console.log('Syncing templates from Meta API:', apiUrl);
+        // BRUTE FORCE DEBUG: Log everything
+        const maskedToken = WHATSAPP_ACCESS_TOKEN ? `***${WHATSAPP_ACCESS_TOKEN.slice(-4)}` : 'NULL';
+        console.log('BRUTE FORCE FETCH:', {
+            url: apiUrl,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${maskedToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
         const response = await fetch(apiUrl, {
             headers: {
                 'Authorization': `Bearer ${WHATSAPP_ACCESS_TOKEN}`
@@ -32,14 +42,14 @@ export async function POST(req: NextRequest) {
         });
 
         if (!response.ok) {
-            const rawError = await response.json();
-            console.error('RAW META ERROR BODY:', JSON.stringify(rawError, null, 2));
+            const errorData = await response.json();
+            console.error('META DEBUG ERROR:', JSON.stringify(errorData, null, 2));
             return NextResponse.json({ 
-                error: 'Meta API Unauthorized/Failed',
-                details: rawError,
-                message: rawError.error?.message || 'Unknown Meta error',
-                subcode: rawError.error?.error_subcode
-            }, { status: response.status });
+                error: 'Meta API Unauthorized',
+                debug: errorData, 
+                url: apiUrl,
+                token_len: WHATSAPP_ACCESS_TOKEN?.length || 0
+            }, { status: 401 });
         }
 
         const data = await response.json();

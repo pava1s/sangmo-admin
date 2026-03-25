@@ -142,7 +142,12 @@ export default function TemplatesPage() {
     try {
       const res = await fetch('/api/v1/whatsapp/templates/sync', { method: 'POST' });
       const result = await res.json();
-      if (!res.ok) throw new Error(result.error || 'Sync failed');
+      if (!res.ok) {
+        if (result.debug) {
+          alert('BRUTE FORCE DEBUG: ' + JSON.stringify(result.debug, null, 2));
+        }
+        throw new Error(result.error || 'Sync failed');
+      }
 
       toast({
         title: "Sync Successful",
@@ -151,6 +156,7 @@ export default function TemplatesPage() {
 
       await fetchTemplates(); // Refresh the list automatically
     } catch (err: any) {
+      console.error('SYNC UI ERROR:', err);
       setError(err.message || String(err));
       toast({
         variant: "destructive",
