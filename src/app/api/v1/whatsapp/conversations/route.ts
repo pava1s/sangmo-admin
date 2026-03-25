@@ -11,25 +11,18 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // GOD MODE: Raw, unfiltered scan for diagnostic purposes
+        // FETCH OVERRIDE: Raw scan to recover all 302 legacy items
         const response = await scanTable();
-        console.log('DynamoDB Raw Fetch (Conversations):', response.Items?.length || 0);
+        const items = response.Items || [];
+        console.log('RECOVERY SCAN: Exposed', items.length, 'raw items.');
 
-        if (!response.Items || response.Items.length === 0) {
-            console.warn('DYNAMODB FETCH: 0 items returned from scanTable()');
-        }
-
-        // Fetch ALL items from the table, filtering only for conversation type in memory
-        const items = (response.Items || []).filter(item => 
-            item.pk?.startsWith('CONV#') || item.gsi1pk === 'TYPE#CONVERSATION'
-        );
-
-        // Map fields if needed (ensuring compatibility with frontend)
+        // Map minimum fields so frontend doesn't crash on undefined attributes
         const mappedItems = items.map(item => ({
             ...item,
-            id: item.id || item.pk?.replace('CONV#', ''),
-            customer_name: item.customer_name || 'Legacy Customer',
-            last_message: item.last_message || item.message_body || 'No content',
+            id: item.id || item.pk || `LEGACY-${Math.random().toString(36).substr(2, 9)}`,
+            customer_name: item.customer_name || item.from_name || item.wa_name || 'Legacy Contact',
+            last_message: item.last_message || item.message_body || item.text || 'No preview available',
+            last_message_at: item.last_message_at || item.created_at || new Date(0).toISOString(),
         }));
         
         // Sort by last_message_at descending

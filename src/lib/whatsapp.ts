@@ -9,6 +9,8 @@ export async function sendWhatsAppTemplateMessage(
     const WHATSAPP_ACCESS_TOKEN = serverEnv.META_TOKEN;
     const WHATSAPP_PHONE_NUMBER_ID = serverEnv.META_PHONE_ID;
 
+    console.log("META TOKEN LENGTH (Template):", WHATSAPP_ACCESS_TOKEN?.length || 0);
+
     if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_NUMBER_ID) {
         throw new Error('WhatsApp environment variables are not configured.');
     }
@@ -54,6 +56,8 @@ export async function sendWhatsAppTemplateMessage(
 export async function sendWhatsAppTextMessage(to: string, text: string) {
     const WHATSAPP_ACCESS_TOKEN = serverEnv.META_TOKEN;
     const WHATSAPP_PHONE_NUMBER_ID = serverEnv.META_PHONE_ID;
+
+    console.log("META TOKEN LENGTH (Text):", WHATSAPP_ACCESS_TOKEN?.length || 0);
 
     if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_NUMBER_ID) {
         throw new Error('WhatsApp environment variables are not configured.');

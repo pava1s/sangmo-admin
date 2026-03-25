@@ -16,6 +16,8 @@ export async function POST(req: NextRequest) {
         const WHATSAPP_ACCESS_TOKEN = serverEnv.META_TOKEN;
         const WHATSAPP_BUSINESS_ID = serverEnv.META_BIZ_ID;
 
+        console.log("META TOKEN LENGTH (Sync):", WHATSAPP_ACCESS_TOKEN?.length || 0);
+
         if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_BUSINESS_ID) {
             throw new Error('Meta API environment variables (WHATSAPP_ACCESS_TOKEN or WHATSAPP_BUSINESS_ID) are missing.');
         }
