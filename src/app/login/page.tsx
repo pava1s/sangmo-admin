@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn, confirmSignIn } from 'aws-amplify/auth';
+import { signIn, confirmSignIn, signOut, getCurrentUser } from 'aws-amplify/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,6 +25,31 @@ export default function LoginPage() {
   const [showNewPasswordFields, setShowNewPasswordFields] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [isSignOutRunning, setIsSignOutRunning] = React.useState(false);
+  
+  // SECURE RELOAD: Purge stale Cognito session if "Already Signed In" error detected
+  React.useEffect(() => {
+    async function checkActiveSession() {
+      try {
+        const user = await getCurrentUser();
+        if (user) {
+          console.warn('Stale session detected. Purging...');
+          setIsSignOutRunning(true);
+          await signOut();
+          window.location.reload();
+        }
+      } catch (e: any) {
+        // If "There is already a signed in user" error manifests during login attempt,
+        // we can also catch it in the handleLogin catch block.
+        // This effect proactively clears if a user is already resolved.
+        if (e.message?.includes('already a signed in user')) {
+          await signOut();
+          window.location.reload();
+        }
+      }
+    }
+    checkActiveSession();
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +110,7 @@ export default function LoginPage() {
             <TravonexLogo className="h-10 w-10" />
           </div>
           <CardTitle className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Wanderlynx Platform</CardTitle>
-          <CardDescription className="text-slate-500 font-medium tracking-wide">ENTERPRISE ADMINISTRATION</CardDescription>
+          <CardDescription className="text-slate-500 font-medium tracking-wide">Wanderlynx Admin Dashboard</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
@@ -172,13 +197,15 @@ export default function LoginPage() {
               </div>
             )}
 
-            <Button type="submit" className="w-full bg-[#2FBF71] hover:bg-[#28a361] h-11" disabled={isLoading}>
-              {isLoading ? (
+            <Button type="submit" className="w-full bg-[#2FBF71] hover:bg-[#28a361] h-11" disabled={isLoading || isSignOutRunning}>
+              {isSignOutRunning ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : showNewPasswordFields ? (
                 'Finalize Account Setup'
               ) : (
-                'Secure Logon'
+                'Secure Login'
               )}
             </Button>
           </form>

@@ -14,26 +14,30 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         }
         */
 
-        // GOD MODE: Raw, unfiltered scan for diagnostic purposes
-        const { scanTable } = await import('@/lib/aws/dynamo');
-        const response = await scanTable();
-        console.log('DynamoDB Raw Fetch (Messages):', response.Items?.length || 0);
+        // RECOVERY MODE: Use QueryCommand for efficiency while maintaining relaxed filtering for legacy data
+        const convPk = `CONV#${id}`;
+        const response = await queryByPk(convPk);
+        
+        console.log(`[API] Query for ${convPk} returned ${response.Items?.length || 0} items`);
 
-        // Fetch ALL items, filtering only for messages of this conversation in memory
-        // GOD MODE: Include anything that matches the conversation ID or message PK
-        let items = (response.Items || []).filter(item => 
-            item.pk === `MSG#${id}` || 
-            item.conversation_id === id || 
-            item.pk === `CONV#${id}` || 
-            item.sk?.includes(id) || 
-            item.source_id === id
+        // Filter and map fields for migration compatibility
+        const items = (response.Items || []).filter(item => 
+            item.pk === `MSG#${id}` || // Support old PK format if it exists in the same partition
+            item.pk === `CONV#${id}` || // Legacy match
+            item.gsi1pk === 'TYPE#MESSAGE' || 
+            item.type === 'message' || 
+            item.sk?.startsWith('MSG#') ||
+            item.sk?.includes('MESSAGE') ||
+            item.message_body // Direct check for legacy content field
         );
 
-        // Map fields for migration compatibility (e.g. message_body -> content)
         const mappedItems = items.map(item => ({
             ...item,
             content: item.content || item.message_body || item.text || 'No content',
             created_at: item.created_at || item.timestamp || new Date().toISOString(),
+            direction: item.direction || (item.sender_type === 'agent' ? 'outbound' : 'inbound'),
+            type: item.type || 'text',
+            status: item.status || 'read'
         }));
         
         mappedItems.sort((a: any, b: any) => 
