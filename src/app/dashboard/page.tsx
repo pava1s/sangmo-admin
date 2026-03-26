@@ -70,7 +70,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-8 p-6 md:p-10 bg-slate-50/50 dark:bg-slate-950/50 min-h-screen">
+    <div className="flex flex-col gap-8 p-6 md:p-10 pb-20 bg-slate-50/50 dark:bg-slate-950/50 min-h-screen">
       {/* Breadcrumb Header */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <span>Dashboard</span>

@@ -320,7 +320,7 @@ export default function DashboardLayout({
         </Sidebar>
 
         {/* MAIN CONTENT */}
-        <SidebarInset className="flex text-clip overflow-hidden">          {/* Header Container */}
+        <SidebarInset className="flex text-clip overflow-y-auto">          {/* Header Container */}
           <div className="flex flex-col w-full sticky top-0 z-20">
             {/* Main Header (Hidden on Inbox for immersive view) */}
             {!isInbox && (

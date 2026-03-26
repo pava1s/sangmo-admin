@@ -463,8 +463,10 @@ export default function InboxPage() {
               ) : (
                 <AnimatePresence>
                   {messages.map((m) => {
-                    const isTemplate = m.type === 'template' || m.content?.includes('API Template:');
-                    const displayContent = isTemplate ? m.content.replace('API Template:', '').trim() : m.content;
+                    // Fallback to type 'text' and explicit content extraction if m.content is missing but we have legacy fields
+                    const rawContent = m.content || (m as any).message_body || (m as any).text || 'Message format not recognized';
+                    const isTemplate = m.type === 'template' || rawContent.includes('API Template:');
+                    const displayContent = isTemplate ? rawContent.replace('API Template:', '').trim() : rawContent;
 
                     return (
                       <motion.div
